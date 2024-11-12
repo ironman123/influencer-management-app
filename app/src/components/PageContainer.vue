@@ -1,16 +1,16 @@
 <template>
     <div :class="{ 'dark-theme': isDarkTheme }" id="page-container">
-      <NavBar :isDarkTheme="isDarkTheme" @toggle-theme="toggleTheme" />
+        <NavBar :isDarkTheme="isDarkTheme" @toggle-theme="toggleTheme" />
       
-      <main>
-        <div>
-            <router-view />
-        </div>
-      </main>
+        <main>
+            <div class="page-content">
+                <router-view :isDarkTheme="isDarkTheme"/>
+            </div>
+        </main>
 
-      <footer>
-        <p>Footer content here</p>
-      </footer>
+        <footer>
+            <p>Footer content here</p>
+        </footer>
     </div>
 </template>
   
@@ -45,10 +45,22 @@
     }
   
     main {
-        flex-grow: 1; /* Takes remaining space */
-        padding: 20px;
+        flex-grow: 1;
+        padding: 0;
+        /* min-height: 86vh; */
+        max-height: 86vh;
+        overflow-y: auto;
+    }
+    .page-content {
+        flex-grow: 1;
+        padding: 3px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 81vh;   
     }
 
+        
     footer {
         padding: 3px;
         background-color: #c7c7c7;

@@ -1,7 +1,7 @@
 <template>
-    <div class="container mt-5">
+    <div class="container">
       <form class="register-form p-4 shadow rounded border" action="/" method="post">
-        <h2 class="text-center mb-4 text-primary">Register</h2>
+        <h2 class="text-center mb-4 text-primary glow-text">Register</h2>
         
         <div class="row">
             <div class="col">
@@ -123,11 +123,24 @@
   /* General layout */
   .container {
     width: 100%;
+    max-height: 90vh;
+    min-width: 45vw;
     max-width: 45vw;
     margin: 0 auto;
   }
   
   /* Form styling */
+  .glow-text {
+    font-size: 1.9em;
+    font-family: 'Josefin Sans', 'Lucida Sans', 'sans-serif';
+    font-weight: 700;
+    text-align: center;
+    background: linear-gradient(50deg, #0F1035, #365486, #6d9ee7, #4b4eee, #6d9ee7, #365486, #0F1035);
+    background-size: 300%;
+    -webkit-text-fill-color: transparent;
+    -webkit-background-clip: text;
+    animation: animate 10s linear infinite alternate;
+    }
   .register-form {
     display: flex;
     flex-direction: column;
