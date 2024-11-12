@@ -22,6 +22,7 @@
 <script>
 import AboutPage from './components/About.vue';
 import HomePage from './components/Home.vue';
+
 export default {
   name: 'App',
   components: {
