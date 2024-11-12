@@ -113,7 +113,7 @@
     /* Text styling */
     h2.text-primary {
         font-weight: 600;
-        background: linear-gradient(50deg, #0f1035, #365486, #6d9ee7, #4b4eee, #6d9ee7, #365486, #0f1035);
+        /* background: linear-gradient(50deg, #0f1035, #365486, #6d9ee7, #4b4eee, #6d9ee7, #365486, #0f1035); */
         background-size: 300%;
         color: transparent;
         -webkit-background-clip: text;
