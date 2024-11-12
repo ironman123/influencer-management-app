@@ -1,33 +1,18 @@
 <template>
   <div id="app">
-    <header>
-      <nav>
-        <router-link to="/">Home</router-link>
-        <router-link to="/about">About</router-link>
-      </nav>
-    </header>
-    
-    <router-view /> 
-
-    <footer>
-      <p>Footer content here</p>
-      
-    <AboutPage></AboutPage>
-    <HomePage></HomePage>
-    <about-page></about-page>
-    </footer>
+      <PageContainer>
+      </PageContainer>
   </div>
 </template>
 
 <script>
-import AboutPage from './components/About.vue';
-import HomePage from './components/Home.vue';
+
+import PageContainer from './components/PageContainer.vue';
 
 export default {
   name: 'App',
   components: {
-    AboutPage,
-    HomePage
+    PageContainer
   }
 }
 </script>
@@ -39,10 +24,9 @@ export default {
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
-  margin-top: 60px;
 }
-
-nav a {
-  margin-right: 10px;
+#app {
+  height: 100%;
+  width: 100%;
 }
 </style>

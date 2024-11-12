@@ -1,13 +1,26 @@
 import Vue from 'vue';
 import Router from 'vue-router';
-import HomePage from './components/Home.vue';
-import AboutPage from './components/About.vue';
+import SignIn from './components/SignIn.vue';
+import RegisterForm from './components/Register.vue';
+import PageContainer from './components/PageContainer.vue';
+
 
 Vue.use(Router);
 
 const routes = [
-    { path: '/', component: HomePage },
-    { path: '/about', component: AboutPage }
+    {
+        path: '/',
+        component: PageContainer
+    },
+    {
+        path: '/signin', 
+        component: SignIn
+    },
+    {
+        path: '/register', 
+        component: RegisterForm
+    }
+    
 ];
 
 export default new Router({
