@@ -3,6 +3,7 @@
         <NavBar :isDarkTheme="isDarkTheme" @toggle-theme="toggleTheme" />
       
         <main>
+            <page-content :isDarkTheme="isDarkTheme"></page-content>
             <div class="page-content">
                 <router-view :isDarkTheme="isDarkTheme"/>
             </div>
@@ -21,6 +22,7 @@
     name: "PageContainer",
     components: {
       NavBar,
+      
     },
     data() {
       return {

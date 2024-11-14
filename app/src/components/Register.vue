@@ -1,7 +1,7 @@
 <template>
-    <div class="container">
-      <form class="register-form p-4 shadow rounded border" action="/" method="post">
-        <h2 class="text-center mb-4 text-primary glow-text">Register</h2>
+    <div :class="['container', { 'dark-theme': isDarkTheme }]">
+      <form class="p-4 shadow rounded border" action="/" method="post" :class="[ isDarkTheme ? 'detail-form-dark' : 'detail-form-light']">
+        <h2 class="text-center mb-4 text-primary" :class="[isDarkTheme ? 'glow-text-dark' : 'glow-text-light']">Register</h2>
         
         <div class="row">
             <div class="col">
@@ -76,6 +76,12 @@
   <script>
   export default {
     name: "RegisterForm",
+    props:{
+      isDarkTheme: {
+        type: Boolean,
+        default: false,
+      }
+    },
     data() {
       return {
         userType: "influencer", // influencer or sponsor
@@ -130,10 +136,10 @@
   }
   
   /* Form styling */
-  .glow-text {
+  .glow-text-light {
     font-size: 1.9em;
     font-family: 'Josefin Sans', 'Lucida Sans', 'sans-serif';
-    font-weight: 700;
+    font-weight: 600;
     text-align: center;
     background: linear-gradient(50deg, #0F1035, #365486, #6d9ee7, #4b4eee, #6d9ee7, #365486, #0F1035);
     background-size: 300%;
@@ -141,7 +147,18 @@
     -webkit-background-clip: text;
     animation: animate 10s linear infinite alternate;
     }
-  .register-form {
+    .glow-text-dark {
+        font-size: 1.9em;
+        font-family: 'Josefin Sans', 'Lucida Sans', 'sans-serif';
+        font-weight: 600;
+        text-align: center;
+        background: linear-gradient(150deg, #8b8cf0, #6d9ee7, #9abef1, #b5c6f4, #9abef1, #6d9ee7, #8b8cf0);
+        background-size: 300%;
+        -webkit-text-fill-color: transparent;
+        -webkit-background-clip: text;
+        animation: animate 10s linear infinite alternate; /* Ensures animation is still applied in dark theme */
+    }
+  .detail-form-light {
     display: flex;
     flex-direction: column;
     font-family: 'Josefin Sans', sans-serif;
@@ -153,6 +170,19 @@
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     border: 1px solid #ddd;
   }
+  .detail-form-dark {
+        display: flex;
+        flex-direction: column;
+        font-family: 'Josefin Sans', sans-serif;
+        background: linear-gradient(60deg, #2c3e4f, #3b5261, #20232a, #3b5261, #2c3e4f);
+        background-size: 300%;
+        border: 1px solid #444;
+        animation: animate 9s linear infinite alternate; /* Ensures animation is still applied in dark theme */
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        border: 1px solid #ddd;
+    }
   
   @keyframes animate {
     0% {
@@ -166,7 +196,6 @@
   /* Text styling */
   h2.text-primary {
     font-weight: 600;
-    background: linear-gradient(50deg, #0f1035, #365486, #6d9ee7, #4b4eee, #6d9ee7, #365486, #0f1035);
     background-size: 300%;
     color: transparent;
     -webkit-background-clip: text;
@@ -203,13 +232,6 @@
   
   button[type="submit"]:hover {
     background-color: #0056b3;
-  }
-  
-  /* Error text */
-  .error-text {
-    color: #dc3545;
-    font-size: 14px;
-    margin-top: 5px;
   }
   </style>
   
