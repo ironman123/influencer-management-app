@@ -132,7 +132,7 @@
     max-height: 90vh;
     min-width: 45vw;
     max-width: 45vw;
-    margin: 0 auto;
+    margin: 1.5vh auto;
   }
   
   /* Form styling */

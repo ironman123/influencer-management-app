@@ -2,17 +2,17 @@ import Vue from 'vue';
 import Router from 'vue-router';
 import SignIn from './components/SignIn.vue';
 import RegisterForm from './components/Register.vue';
-//import PageContainer from './components/PageContainer.vue';
+import DashBoard from './components/DashBoard.vue';
 
 
 Vue.use(Router);
 
-const isAuthenticated = false;
+const isAuthenticated = true;
 
 const routes = [
     {
         path: '/',
-        component: isAuthenticated ? RegisterForm : SignIn
+        component: isAuthenticated ? DashBoard : SignIn
     },
     {
         path: '/register', 

@@ -45,7 +45,7 @@
     width: 100%;
     min-width: 27vw;
     max-width: 27vw;
-    margin: 0 auto;
+    margin: 1.5vh auto;
   }
   
   /* Form styling */

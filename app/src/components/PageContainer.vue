@@ -55,7 +55,7 @@
     }
     .page-content {
         flex-grow: 1;
-        padding: 3px;
+        /* padding: 2px; */
         display: flex;
         justify-content: center;
         align-items: center;
