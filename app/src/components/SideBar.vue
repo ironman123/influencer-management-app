@@ -1,76 +1,103 @@
 <template>
-    <div class="d-flex flex-column flex-shrink-0 p-3 text-white bg-dark" style="width: 280px;">
-    <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
-      <svg class="bi me-2" width="40" height="32"><use xlink:href="#bootstrap"></use></svg>
-      <span class="fs-4">Sidebar</span>
-    </a>
-    <hr>
-    <ul class="nav nav-pills flex-column mb-auto">
-      <li class="nav-item">
-        <a href="#" class="nav-link active" aria-current="page">
-          <svg class="bi me-2" width="16" height="16"><use xlink:href="#home"></use></svg>
-          Home
-        </a>
-      </li>
-      <li>
-        <a href="#" class="nav-link text-white">
-          <svg class="bi me-2" width="16" height="16"><use xlink:href="#speedometer2"></use></svg>
-          Dashboard
-        </a>
-      </li>
-      <li>
-        <a href="#" class="nav-link text-white">
-          <svg class="bi me-2" width="16" height="16"><use xlink:href="#table"></use></svg>
-          Orders
-        </a>
-      </li>
-      <li>
-        <a href="#" class="nav-link text-white">
-          <svg class="bi me-2" width="16" height="16"><use xlink:href="#grid"></use></svg>
-          Products
-        </a>
-      </li>
-      <li>
-        <a href="#" class="nav-link text-white">
-          <svg class="bi me-2" width="16" height="16"><use xlink:href="#people-circle"></use></svg>
-          Customers
-        </a>
-      </li>
-    </ul>
-    <hr>
-    <div class="dropdown">
-      <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" id="dropdownUser1" data-bs-toggle="dropdown" aria-expanded="false">
-        <img src="https://github.com/mdo.png" alt="" width="32" height="32" class="rounded-circle me-2">
-        <strong>mdo</strong>
-      </a>
-      <ul class="dropdown-menu dropdown-menu-dark text-small shadow" aria-labelledby="dropdownUser1">
-        <li><a class="dropdown-item" href="#">New project...</a></li>
-        <li><a class="dropdown-item" href="#">Settings</a></li>
-        <li><a class="dropdown-item" href="#">Profile</a></li>
-        <li><hr class="dropdown-divider"></li>
-        <li><a class="dropdown-item" href="#">Sign out</a></li>
-      </ul>
+  <div :class="['sidebar', { collapsed: isCollapsed }, {dark: isDarkTheme}]">
+    <button @click="toggleSidebar" class="toggle-btn">
+      <img src="/sidebaricons/toggle.png" alt="Toggle" height="30vh"/>
+    </button>
+    <div class="sidebar-items">
+      <SidebarItem
+        v-for="item in filteredItems"
+        :key="item.name"
+        :name="item.name"
+        :icon="item.icon"
+        :isCollapsed="isCollapsed"
+        @click="handleItemClick(item.route)"
+      />
     </div>
   </div>
 </template>
 
 <script>
-    export default{
-        name: 'SideBar',
-        props:{
-            isDarkTheme:{
-                type: Boolean,
-                default: false
-            }
-        },
-        data(){
-            return {
-
-            }
-        }
+  import SidebarItem from './SidebarItem.vue';
+  export default{
+    name: 'SideBar',
+    props:{
+      isDarkTheme:{
+        type: Boolean,
+        default: false
+      },
+      userRole:{
+        type:String,
+        required:true
+      }
+    },
+    data(){
+      return {
+        isCollapsed: false,
+        items: [
+          { name: 'Home', icon: '/sidebaricons/home.png', route: '/home', roles: ['admin', 'influencer', 'sponsor'] },
+          { name: 'Settings', icon: '/sidebaricons/settings.png', route: '/settings', roles: ['admin', 'influencer'] },
+          { name: 'Profile', icon: '/sidebaricons/profile.png', route: '/profile', roles: ['admin', 'influencer', 'sponsor'] },
+          { name: 'Manage Users', icon: '/sidebaricons/manage-users.png', route: '/manage-users', roles: ['admin'] },
+          { name: 'Campaigns', icon: '/sidebaricons/campaigns.png', route: '/campaigns', roles: ['sponsor'] },
+        ],
+      }
+    },
+    methods:{
+      toggleSidebar(){
+        this.isCollapsed = !this.isCollapsed;
+      },
+      handleItemClick(route){
+        this.$emit('changePage',route)
+      }
+    },
+    computed: {
+      filteredItems() {
+        return this.items.filter((item) => item.roles.includes(this.userRole));
+      },
+    },
+    components:{
+      SidebarItem
     }
+  }
 </script>
 
 <style scoped>
+  .sidebar {
+    width: 15rem;
+    transition: width 0.3s ease;
+    background-color: #f4f4f4;
+    /* color:rgb(21, 40, 56); */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1rem;
+  }
+  .sidebar.collapsed {
+    width: 3.75rem;
+  }
 
+  .sidebar.dark {
+    background-color: #1e1e1e;
+    color: #cad7d8;
+  }
+  .sidebar.dark .toggle-btn {
+    filter: brightness(0.95);
+  }
+  .toggle-btn {
+    margin-bottom: 1rem;
+    cursor: pointer;
+    align-self: flex-end;
+    background: none;
+    border: none;
+    outline: none;
+    padding: 0;
+
+  }
+  .sidebar-items {
+    display: flex;
+    flex-direction: column;
+    gap: 1.75rem;
+    align-self: flex-start;
+    margin-top: 1rem;
+  }
 </style>

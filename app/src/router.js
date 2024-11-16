@@ -7,7 +7,7 @@ import DashBoard from './components/DashBoard.vue';
 
 Vue.use(Router);
 
-const isAuthenticated = true;
+const isAuthenticated = false;
 
 const routes = [
     {

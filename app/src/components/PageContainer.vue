@@ -3,10 +3,9 @@
         <NavBar :isDarkTheme="isDarkTheme" @toggle-theme="toggleTheme" />
       
         <main>
-            <page-content :isDarkTheme="isDarkTheme"></page-content>
-            <div class="page-content">
-                <router-view :isDarkTheme="isDarkTheme"/>
-            </div>
+          <div class="page-content">
+            <router-view :isDarkTheme="isDarkTheme" :userRole="userRole"/> <!-- This Renders SignIn/Dashboard Conditionally-->
+          </div>
         </main>
 
         <footer>
@@ -17,16 +16,18 @@
   
 <script>
   import NavBar from './Navbar.vue';
+  // import DashBoard from './DashBoard.vue';
   
   export default {
     name: "PageContainer",
     components: {
       NavBar,
-      
+      // DashBoard
     },
     data() {
       return {
         isDarkTheme: false,
+        userRole: 'influencer'
       };
     },
     methods: {
