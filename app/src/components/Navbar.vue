@@ -11,8 +11,9 @@
                 <img :src="isDarkTheme ? sunIcon : moonIcon" :alt="isDarkTheme ? 'Light Mode' : 'Dark Mode'" class="theme-icon" height=33vh/>
                 <!-- {{ isDarkTheme ? 'Light Mode' : 'Dark Mode' }} -->
             </button>
-            <router-link v-if="$route.path !== '/register'" to="/register">Register</router-link>
-            <router-link v-if="$route.path !== '/'" to="/">Sign In</router-link>
+            <router-link v-if="!isAuthenticated && $route.path !== '/register'" to="/register"><button class="btn btn-primary">Register</button></router-link>
+            <router-link v-if="!isAuthenticated && $route.path !== '/'" to="/"><button class="btn btn-warning">Sign In</button></router-link>
+            <button v-if="isAuthenticated" @click="signOut" class="btn btn-danger">Sign Out</button>
         </div>
 
     </nav>
@@ -22,6 +23,7 @@
 <script>
     import sunIcon from '@/assets/sun.png';
     import moonIcon from '@/assets/moon.png';
+    import {mapState} from 'vuex';
 
     export default {
         name: "NavBar",
@@ -29,19 +31,33 @@
         {
             return{
                 sunIcon,
-                moonIcon
+                moonIcon,   
             }
         },
         props:
         {
-            isDarkTheme: Boolean,        
+            isDarkTheme: {
+                type: Boolean,
+                default: false,
+            },
+            
+        },
+        computed:{
+            ...mapState(['isAuthenticated']),
+        },
+        created(){
         },
         methods:
         {
+            signOut() {
+                this.$store.dispatch('signOut');
+                this.$router.push('/');
+            },
             toggleTheme()
             {
                 this.$emit("toggle-theme");
-            }
+            },
+            
         },
         watch:
         {

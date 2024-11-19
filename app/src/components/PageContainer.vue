@@ -1,6 +1,10 @@
 <template>
     <div :class="{ 'dark-theme': isDarkTheme }" id="page-container">
-        <NavBar :isDarkTheme="isDarkTheme" @toggle-theme="toggleTheme" />
+        <NavBar 
+          :isDarkTheme="isDarkTheme" 
+          @toggle-theme="toggleTheme"
+          @sign-out="console.log('Signout Caught at Container')"
+        />
       
         <main>
           <div class="page-content">
