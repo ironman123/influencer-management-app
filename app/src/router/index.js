@@ -6,13 +6,10 @@ import DashBoard from '../components/DashBoard.vue';
 import store from '../store'
 
 
-let count = 10;
-
-setInterval(()=>{console.log(store.state.isAuthenticated)},1000)
-
 const routes = [
   {
     path: '/',
+    component: SignIn,
     beforeEnter:(to,from,next)=>{
       if (store.state.isAuthenticated) {
         next('/dashboard');
@@ -22,7 +19,6 @@ const routes = [
         next();
       }
     },
-    component: SignIn,
   },
   {
     path: '/dashboard',
@@ -42,7 +38,7 @@ const router = createRouter({
 });
 
 router.beforeEach((to, from, next) => {
-  console.log(count++);
+  
   next();
 });
 

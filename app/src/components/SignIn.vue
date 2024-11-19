@@ -1,18 +1,34 @@
 <template>
     <div :class="['container', { 'dark-theme': isDarkTheme }]">
-        <form class="p-4 shadow rounded border" action="/" method="post" :class="[ isDarkTheme ? 'detail-form-dark' : 'detail-form-light']" >
+        <form class="p-4 shadow rounded border" @submit.prevent="signIn" action="/" method="post" :class="[ isDarkTheme ? 'detail-form-dark' : 'detail-form-light']" >
             <h2 class="text-center mb-4 text-primary" :class="[isDarkTheme ? 'glow-text-dark' : 'glow-text-light']">Sign In</h2>
             
             <div class="mb-3">
               <label for="user-name" class="form-label">Email address</label>
-              <input type="email" class="form-control" id="user-name" name="username" placeholder="user@email.com" required />
+              <input 
+                type="email" 
+                class="form-control" 
+                id="user-name" 
+                name="username" 
+                v-model="userName"
+                placeholder="user@email.com" 
+                required 
+              />
               <div class="error-text">{{ userError }}</div>
             </div>
                         
           
             <div class="mb-3">
               <label for="user-password" class="form-label">Password</label>
-              <input type="password" class="form-control" id="user-password" name="password" placeholder="Password" required />
+              <input 
+              type="password" 
+              class="form-control" 
+              id="user-password" 
+              name="password" 
+              v-model="password"
+              placeholder="Password" 
+              required 
+            />
               <div class="error-text">{{ passwordError }}</div>
             </div>
           
@@ -32,10 +48,27 @@
     },
     data() {
       return {
+        userName: "",
+        password: "",
         userError: "", // Example error handling
         passwordError: "", // Example error handling
       };
     },
+    methods:{
+      signIn(){
+        this.userError = "";
+        this.passwordError = "";
+        if (this.userName === "user@email.com" && this.password === "1234") {
+          this.$store.dispatch('signIn');
+          this.$router.push('/dashboard');
+        }
+        else {
+          this.userError = "Invalid email address";
+          this.passwordError = "Invalid password";
+        }
+        
+      }
+    }
   };
 </script>
   
