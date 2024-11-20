@@ -16,8 +16,6 @@
               />
               <div class="error-text" v-if="error.email">{{ error.email }}</div>
             </div>
-                        
-          
             <div class="mb-3">
               <label for="user-password" class="form-label">Password</label>
               <input 
@@ -101,7 +99,7 @@
     min-width: 27vw;
     max-width: 27vw;
     margin: 1.5vh auto;
-    color:#242a31;
+    /* color:#242a31; */
   }
   
   /* Form styling */
@@ -154,6 +152,25 @@
         border-radius: 10px;
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         border: 1px solid #ddd;
+    }
+    .detail-form-dark input,
+    .detail-form-dark select,
+    .detail-form-dark textarea {
+        background-color: #2c3e4f;
+        color: #fff; /* Text color for better contrast */
+        border: 1px solid #444;
+        border-radius: 5px;
+    }
+    .detail-form-dark input::placeholder,
+    .detail-form-dark textarea::placeholder {
+        color: #aaa; /* Placeholder text color */
+    }
+    .detail-form-dark input:focus,
+    .detail-form-dark select:focus,
+    .detail-form-dark textarea:focus {
+        outline: none;
+        border-color: #007bff;
+        box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
     }
 
     @keyframes animate {
@@ -225,6 +242,10 @@
       50% {
         transform: translateX(1em);
     }
+  }
+  input:hover, select:hover {
+    border-color: #007bff;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
   }
 </style>
   
