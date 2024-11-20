@@ -3,22 +3,20 @@ import { createStore } from 'vuex';
 
 export default createStore({
   state: {
-    isAuthenticated: false,
+    isAuthenticated: localStorage.getItem('isAuthenticated') === 'true',
   },
   mutations: {
-    setAuthenticated(state) {
-      state.isAuthenticated = true;
-    },
-    clearAuthentication(state) {
-      state.isAuthenticated = false;
+    setAuth(state,status) {
+      state.isAuthenticated = status;
+      localStorage.setItem('isAuthenticated',status);
     },
   },
   actions: {
     signIn({commit}){
-      commit('setAuthenticated');
+      commit('setAuth',true);
     },
     signOut({ commit }) {
-      commit('clearAuthentication');
+      commit('setAuth',false);
     },
   },
   getters: {

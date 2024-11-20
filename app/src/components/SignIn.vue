@@ -1,20 +1,20 @@
 <template>
     <div :class="['container', { 'dark-theme': isDarkTheme }]">
-        <form class="p-4 shadow rounded border" @submit.prevent="signIn" action="/" method="post" :class="[ isDarkTheme ? 'detail-form-dark' : 'detail-form-light']" >
+        <form class="p-4 shadow rounded border" @submit="signIn" action="/" method="post" :class="[ isDarkTheme ? 'detail-form-dark' : 'detail-form-light']" >
             <h2 class="text-center mb-4 text-primary" :class="[isDarkTheme ? 'glow-text-dark' : 'glow-text-light']">Sign In</h2>
             
             <div class="mb-3">
               <label for="user-name" class="form-label">Email address</label>
               <input 
-                type="email" 
+                type="text" 
                 class="form-control" 
                 id="user-name" 
-                name="username" 
-                v-model="userName"
+                name="email" 
+                v-model="email"
                 placeholder="user@email.com" 
-                required 
+                @focus="error.email=''"
               />
-              <div class="error-text">{{ userError }}</div>
+              <div class="error-text" v-if="error.email">{{ error.email }}</div>
             </div>
                         
           
@@ -26,10 +26,10 @@
               id="user-password" 
               name="password" 
               v-model="password"
-              placeholder="Password" 
-              required 
+              placeholder="Password"
+              @focus="error.password=''"
             />
-              <div class="error-text">{{ passwordError }}</div>
+            <div class="error-text" v-if="error.password">{{ error.password }}</div>
             </div>
           
             <button type="submit" class="btn-primary w-100">Submit</button>
@@ -48,25 +48,46 @@
     },
     data() {
       return {
-        userName: "",
+        email: "",
         password: "",
-        userError: "", // Example error handling
-        passwordError: "", // Example error handling
+        error:{
+          email:"",
+          password:""
+        }
       };
     },
     methods:{
-      signIn(){
-        this.userError = "";
-        this.passwordError = "";
-        if (this.userName === "user@email.com" && this.password === "1234") {
+      signIn(event){
+        event.preventDefault();
+        this.error={
+          email:"",
+          password:"",
+        };
+        if(!this.email.match(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/))
+        {
+          this.error.email="Incorrect Email Format!";
+          //console.log("email error");
+          return;
+        }
+        else if(this.password.length < 5)
+        {
+          this.error.password="Password Too Short!";
+          return;
+        }
+        else if (this.email === "user@email.com" && this.password === "12345") {
           this.$store.dispatch('signIn');
           this.$router.push('/dashboard');
         }
-        else {
-          this.userError = "Invalid email address";
-          this.passwordError = "Invalid password";
+        else{
+          this.error.email="Incorrect Email!";
+          this.error.password="Incorrect Password!";
         }
         
+      }
+    },
+    watch:{
+      error(v){
+        console.log(v);
       }
     }
   };
@@ -75,17 +96,18 @@
 <style scoped>
   /* General layout */
   .container {
+    font-family: 'Josefin Sans', 'Lucida Sans', 'sans-serif';
     width: 100%;
     min-width: 27vw;
     max-width: 27vw;
     margin: 1.5vh auto;
+    color:#242a31;
   }
   
   /* Form styling */
 
     .glow-text-light {
         font-size: 1.9em;
-        font-family: 'Josefin Sans', 'Lucida Sans', 'sans-serif';
         font-weight: 600;
         text-align: center;
         background: linear-gradient(50deg, #0F1035, #365486, #6d9ee7, #4b4eee, #6d9ee7, #365486, #0F1035);
@@ -180,14 +202,29 @@
   }
   
   button[type="submit"]:hover {
-    background-color: #0056b3;
+    background-color: #3c89db;
   }
   
   /* Error text */
-  /* .error-text {
+  .error-text {
     color: #dc3545;
-    font-size: 14px;
-    margin-top: 5px;
-  } */
+    font-size: smaller;
+    font-family: 'Josefin Sans', 'Lucida Sans', 'sans-serif';
+    animation: shake 0.21s 0.1s;
+    margin-top: 0;
+    text-align: left;
+    margin-left: 0.5vw;
+  }
+  @keyframes shake {
+      0%,100% {
+        transform: translateX(0);
+    }
+      25%,75% {
+        transform: translateX(-0.72em);
+    }
+      50% {
+        transform: translateX(1em);
+    }
+  }
 </style>
   

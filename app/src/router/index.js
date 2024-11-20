@@ -13,8 +13,6 @@ const routes = [
     beforeEnter:(to,from,next)=>{
       if (store.state.isAuthenticated) {
         next('/dashboard');
-      } else if (from.path !== '/'){
-        next();
       } else{
         next();
       }
@@ -33,12 +31,18 @@ const routes = [
 ];
 
 const router = createRouter({
-  history: createWebHistory(),  // Use createWebHistory for Vue 3
+  history: createWebHistory(),
   routes,
 });
 
 router.beforeEach((to, from, next) => {
-  
+  if(to.meta.requiresAuth && !store.state.isAuthenticated)
+  {
+    next('/');
+  }
+  else if (to.path === "/" && store.state.isAuthenticated) {
+    next("/dashboard");
+  } 
   next();
 });
 
