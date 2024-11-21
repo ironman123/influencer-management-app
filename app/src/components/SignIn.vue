@@ -55,7 +55,7 @@
       };
     },
     methods:{
-      signIn(event){
+      async signIn(event){
         event.preventDefault();
         this.error={
           email:"",
@@ -72,21 +72,44 @@
           this.error.password="Password Too Short!";
           return;
         }
-        else if (this.email === "user@email.com" && this.password === "12345") {
-          this.$store.dispatch('signIn');
-          this.$router.push('/dashboard');
-        }
         else{
-          this.error.email="Incorrect Email!";
-          this.error.password="Incorrect Password!";
+          const url = 'http://127.0.0.1:5000/auth/signin';
+          const payload = {
+            email:this.email,
+            password:this.password
+          }
+          // console.log(JSON.stringify(payload))
+          try{
+            const response = await fetch(url,{
+              method:"POST",
+              headers:{"Content-Type":"application/json"},
+              body:JSON.stringify(payload)
+            })
+            if(response.ok){
+              const data = await response.json();
+              // console.log(data);
+              localStorage.setItem("token",data.token);
+              this.$store.dispatch('signIn',data);
+              this.$router.push('/dashboard');
+              
+              //localStorage.setItem("userType",data.user_type);
+            }
+            else if(response.status == 401){
+              console.log('Nope')
+              this.error.email="Incorrect Email!";
+              this.error.password="Incorrect Password!";
+            }
+          }
+          catch(e)
+          {
+            console.log(e)
+          }
         }
         
       }
     },
     watch:{
-      error(v){
-        console.log(v);
-      }
+      
     }
   };
 </script>
@@ -103,93 +126,90 @@
   }
   
   /* Form styling */
+  .glow-text-light, .glow-text-dark{
+    font-size: 1.9em;
+    font-weight: 600;
+    text-align: center;
+    background-size: 300%;
+    -webkit-text-fill-color: transparent;
+    -webkit-background-clip: text;
+    animation: animate 10s linear infinite alternate;
+  }
 
-    .glow-text-light {
-        font-size: 1.9em;
-        font-weight: 600;
-        text-align: center;
-        background: linear-gradient(50deg, #0F1035, #365486, #6d9ee7, #4b4eee, #6d9ee7, #365486, #0F1035);
-        background-size: 300%;
-        -webkit-text-fill-color: transparent;
-        -webkit-background-clip: text;
-        animation: animate 10s linear infinite alternate;
-    }
+  .glow-text-light {
+    background: linear-gradient(50deg, #0F1035, #365486, #6d9ee7, #4b4eee, #6d9ee7, #365486, #0F1035);
+        
+  }
 
-    .glow-text-dark {
-        font-size: 1.9em;
-        font-family: 'Josefin Sans', 'Lucida Sans', 'sans-serif';
-        font-weight: 600;
-        text-align: center;
-        background: linear-gradient(150deg, #8b8cf0, #6d9ee7, #9abef1, #b5c6f4, #9abef1, #6d9ee7, #8b8cf0);
-        background-size: 300%;
-        -webkit-text-fill-color: transparent;
-        -webkit-background-clip: text;
-        animation: animate 10s linear infinite alternate; /* Ensures animation is still applied in dark theme */
-    }
+  .glow-text-dark {
+    background: linear-gradient(150deg, #8b8cf0, #6d9ee7, #9abef1, #b5c6f4, #9abef1, #6d9ee7, #8b8cf0);
+  }
 
-    .detail-form-light {
-        display: flex;
-        flex-direction: column;
-        font-family: 'Josefin Sans', sans-serif;
-        background: linear-gradient(60deg, #92c7cf, #aad7d9, #fbf9f1, #e5e1da, #fbf9f1, #aad7d9, #92c7cf);
-        background-size: 300%;
-        animation: animate 9s linear infinite alternate;
-        padding: 20px;
-        border-radius: 10px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        border: 1px solid #ddd;
-    }
+  .detail-form-light,.detail-form-dark {
+    display: flex;
+    flex-direction: column;
+    font-family: 'Josefin Sans', sans-serif;
+    background: linear-gradient(60deg, #92c7cf, #aad7d9, #fbf9f1, #e5e1da, #fbf9f1, #aad7d9, #92c7cf);
+    background-size: 300%;
+    animation: animate 9s linear infinite alternate;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border: 1px solid #ddd;
+  }
 
-    .detail-form-dark {
-        display: flex;
-        flex-direction: column;
-        font-family: 'Josefin Sans', sans-serif;
-        background: linear-gradient(60deg, #2c3e4f, #3b5261, #20232a, #3b5261, #2c3e4f);
-        background-size: 300%;
-        border: 1px solid #444;
-        animation: animate 9s linear infinite alternate; /* Ensures animation is still applied in dark theme */
-        padding: 20px;
-        border-radius: 10px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        border: 1px solid #ddd;
-    }
-    .detail-form-dark input,
-    .detail-form-dark select,
-    .detail-form-dark textarea {
-        background-color: #2c3e4f;
-        color: #fff; /* Text color for better contrast */
-        border: 1px solid #444;
-        border-radius: 5px;
-    }
-    .detail-form-dark input::placeholder,
-    .detail-form-dark textarea::placeholder {
-        color: #aaa; /* Placeholder text color */
-    }
-    .detail-form-dark input:focus,
-    .detail-form-dark select:focus,
-    .detail-form-dark textarea:focus {
-        outline: none;
-        border-color: #007bff;
-        box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
-    }
+  .detail-form-dark {
+    display: flex;
+    flex-direction: column;
+    font-family: 'Josefin Sans', sans-serif;
+    background: linear-gradient(60deg, #2c3e4f, #3b5261, #20232a, #3b5261, #2c3e4f);
+    background-size: 300%;
+    border: 1px solid #444;
+    animation: animate 9s linear infinite alternate; /* Ensures animation is still applied in dark theme */
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border: 1px solid #ddd;
+  }
+  .detail-form-dark input,
+  .detail-form-dark select,
+  .detail-form-dark textarea {
+      background-color: #2c3e4f;
+      color: #fff; /* Text color for better contrast */
+      border: 1px solid #444;
+      border-radius: 5px;
+  }
 
-    @keyframes animate {
-        0% {
-          background-position: 0%;
-        }
-        100% {
-          background-position: 100%;
-        }
-    }
+  .detail-form-dark input::placeholder,
+  .detail-form-dark textarea::placeholder {
+      color: #aaa; /* Placeholder text color */
+  }
+
+  .detail-form-dark input:focus,
+  .detail-form-dark select:focus,
+  .detail-form-dark textarea:focus {
+      outline: none;
+      border-color: #007bff;
+      box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+  }
   
-    /* Text styling */
-    h2.text-primary {
-        font-weight: 600;
-        background-size: 300%;
-        color: transparent;
-        -webkit-background-clip: text;
-        animation: animate 10s linear infinite alternate;
-    }
+  @keyframes animate {
+      0% {
+        background-position: 0%;
+      }
+      100% {
+        background-position: 100%;
+      }
+  }
+
+  /* Text styling */
+  h2.text-primary {
+      font-weight: 600;
+      background-size: 300%;
+      color: transparent;
+      -webkit-background-clip: text;
+      animation: animate 10s linear infinite alternate;
+  }
   
   /* Input and button styling */
   .form-control {
