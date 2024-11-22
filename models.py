@@ -20,13 +20,13 @@ class Sponsor(db.Model):
     __tablename__ = 'sponsors'
     id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
     industry = db.Column(db.String(120), nullable=False)
-    user = db.relationship('User', backref='sponsor', uselist=False)
+    user = db.relationship('User', backref=db.backref('sponsor',cascade="all, delete"), uselist=False)
 
 # Influencer-Specific Table
 class Influencer(db.Model):
     __tablename__ = 'influencers'
     id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
-    user = db.relationship('User', backref='influencer', uselist=False)
+    user = db.relationship('User', backref=db.backref('influencer',cascade="all, delete"), uselist=False)
 
 # Many-to-Many Relationship for Platforms
 influencer_platforms = db.Table(
@@ -54,7 +54,7 @@ class Campaign(db.Model):
     visibility = db.Column(db.String(20), nullable=False)  # public or private
     goals = db.Column(db.Text, nullable=False)
     sponsor_id = db.Column(db.Integer, db.ForeignKey('sponsors.id'), nullable=False)  # Foreign Key to Sponsor
-    sponsor = db.relationship('Sponsor', backref='campaigns')
+    sponsor = db.relationship('Sponsor', backref=db.backref('campaigns',cascade="all, delete"))
 
 # AdRequest Table
 class AdRequest(db.Model):
@@ -65,8 +65,8 @@ class AdRequest(db.Model):
     requirements = db.Column(db.Text, nullable=False)
     payment_amount = db.Column(db.Float, nullable=False)
     status = db.Column(db.String(20), nullable=False, default="Pending")  # Pending, Accepted, Rejected
-    campaign = db.relationship('Campaign', backref='ad_requests')
-    influencer = db.relationship('User', backref='ad_requests')  # Influencer is a User
+    campaign = db.relationship('Campaign', backref=db.backref('ad_requests',cascade="all, delete"))
+    influencer = db.relationship('User', backref=db.backref('ad_requests',cascade="all, delete"))  # Influencer is a User
 
 # Messages Table (Optional)
 class Message(db.Model):
@@ -76,8 +76,8 @@ class Message(db.Model):
     sender_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     message_text = db.Column(db.Text, nullable=False)
     timestamp = db.Column(db.DateTime, default=datetime.now)
-    ad_request = db.relationship('AdRequest', backref='messages')
-    sender = db.relationship('User', backref='sent_messages')
+    ad_request = db.relationship('AdRequest', backref=db.backref('messages',cascade="all, delete"))
+    sender = db.relationship('User', backref=db.backref('sent_messages',cascade="all, delete"))
 
 # Function to create admin user
 def create_admin():
@@ -91,7 +91,14 @@ def create_admin():
             user_type="admin"
         )
         db.session.add(admin)
-        db.session.commit()
+    for platform in ['instagram','facebook','youtube']:
+        existing_platform = Platform.query.filter_by(name=platform).first()
+        if not existing_platform:
+            p = Platform(
+                name = platform
+            )
+            db.session.add(p)
+    db.session.commit()
 
 # Initialize Database and Admin User
 # @app.before_first_request

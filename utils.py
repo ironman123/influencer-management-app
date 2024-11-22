@@ -28,12 +28,12 @@ def token_required(f):
         except jwt.InvalidTokenError:
             print("Token Invalid!")
             return jsonify({'message':'Invalid Token!'}),401
-        return f(*args,**kwargs)
+        return f(data,*args,**kwargs)
     return wrapper
 
 def tokenizer(email):
     token = jwt.encode(
-               {'email':email,'exp':datetime.now(timezone.utc) + timedelta(seconds=10)},
+               {'email':email,'exp':datetime.now(timezone.utc) + timedelta(seconds=30)},
                secret_key,
                algorithm = "HS256"
            )

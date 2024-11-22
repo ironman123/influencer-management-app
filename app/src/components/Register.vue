@@ -1,6 +1,6 @@
 <template>
     <div :class="['container', { 'dark-theme': isDarkTheme }]">
-      <form class="p-4 shadow rounded border" action="/" method="post" :class="[ isDarkTheme ? 'detail-form-dark' : 'detail-form-light']" @submit="validateForm">
+      <form class="p-4 shadow rounded border" action="/" method="post" :class="[ isDarkTheme ? 'detail-form-dark' : 'detail-form-light']" @submit="submitForm">
         <h2 class="text-center mb-4 text-primary" :class="[isDarkTheme ? 'glow-text-dark' : 'glow-text-light']">Register</h2>
         <div class="row">
             <div class="col">
@@ -17,6 +17,7 @@
                     >{{ option.label }}
                   </option>
                 </select>
+                <div class="error-text" v-if="error.userType">{{ error.userType }}</div>
               </div>
             </div>        
             <div v-if="userType === 'influencer'"  class="col">
@@ -44,6 +45,7 @@
                   </div>
                 </div>
               </div>
+              <div class="error-text" v-if="error.platforms">{{ error.platforms }}</div>
             </div>
             <div v-if="userType === 'sponsor'" class="col" @focusout="validateForm">
                 <!-- Sponsor Industry Selection -->
@@ -58,7 +60,9 @@
                           >{{ option.label }}
                         </option>
                     </select>
+                    <div class="error-text" v-if="error.industry">{{ error.industry }}</div>
                 </div>
+                
             </div>
         </div>
   
@@ -66,11 +70,13 @@
         <div class="mb-3">
           <label for="name" class="form-label">Full Name</label>
           <input type="text" id="name" class="form-control" v-model="fullname" placeholder="Enter your full name" @focusout="validateFullName" />
+          <div class="error-text" v-if="error.fullname">{{ error.fullname }}</div>
         </div>
   
         <div class="mb-3">
           <label for="email" class="form-label">Email address</label>
           <input type="email" id="email" class="form-control" v-model="email" placeholder="user@email.com" @focusout="validateEmail"  />
+          <div class="error-text" v-if="error.email">{{ error.email }}</div>
         </div>
   
         <div class="row">
@@ -78,12 +84,14 @@
                 <div class="mb-3">
                 <label for="password" class="form-label">Password</label>
                 <input type="password" id="password" class="form-control" v-model="password" placeholder="Enter your password" @focusout="validatePassword" />
+                <div class="error-text" v-if="error.password">{{ error.password }}</div>
                 </div>
             </div>
             <div class="col">
                 <div class="mb-3">
                 <label for="confirm-password" class="form-label">Confirm Password</label>
-                <input type="password" id="confirm-password" class="form-control" v-model="confirmPassword" placeholder="Confirm your password" @focusout="validatePassword" />
+                <input type="password" id="confirm-password" class="form-control" v-model="confirmPassword" placeholder="Confirm your password" @focusout="validateConfirmPassword" />
+                <div class="error-text" v-if="error.confirmPassword">{{ error.confirmPassword }}</div>
                 </div>
             </div>
         </div>
@@ -163,9 +171,10 @@
           }
           else
           {
-            const validOptions = this.userTypeOptions.map(a=>a.value);
-            if(!this.platforms.every(platform=>validOptions.includes(platform.value)))
-            {
+            const validOptions = this.platformOptions.map(a=>a.value);
+            
+            if(!Object.values(this.platforms).every(platform=>validOptions.includes(platform)))
+            {          
               this.error.platforms="Invalid Platform Selected!"
               return false;
             }
@@ -175,7 +184,8 @@
         else if(this.userType === "sponsor")
         { 
           this.error.industry = "";
-          if(this.industry === "" || this.industryOptions.some(option=>option.value !== this.industry))
+          const validOptions = this.industryOptions.map(a=>a.value);
+          if(this.industry === "" || !validOptions.includes(this.industry))
           {
             this.error.industry = "Invalid Industry!";
             return false;
@@ -206,42 +216,75 @@
       validatePassword()
       {
         this.error.password="";
-        this.error.confirmPassword="";
-        if (this.password.length < 5) 
+        if (this.password.length < 5 ) 
         {
           this.error.password = "Password too Short!";
           return false;
         }
-        else if(this.password !== this.confirmPassword)
+        return true;
+      },
+      validateConfirmPassword()
+      {
+        this.error.confirmPassword="";
+        if(this.password !== this.confirmPassword)
         {
           this.error.confirmPassword = "Passwords does not match!";
           return false;
         }
         return true;
       },
-      validateForm(event)
+      validateForm()
       {
-        event.preventDefault();
-        this.validateUser();
-        this.validateOptions();
-        this.validateFullName();
-        this.validateEmail();
-        this.validatePassword();
-        console.log(this.error);
+        return (this.validateUser()
+          &&  this.validateOptions()
+          &&  this.validateFullName()
+          &&  this.validateEmail()
+          &&  this.validatePassword()
+          &&  this.validateConfirmPassword()
+        );
       },
-      submitForm(event) {
+      async submitForm(event) {
         event.preventDefault();
         if (this.validateForm()) {
           // handle form submission
-          console.log({
-            userType: this.userType,
-            platform: this.platform,
-            industry: this.industry,
-            name: this.name,
-            email: this.email,
-            password: this.password,
-          });
+          const url = 'http://127.0.0.1:5000/auth/register';
+          const payload = {
+            email:this.email,
+            password:this.password,
+            fullname:this.fullname,
+            userType:this.userType,
+          }
+          if (this.userType === "sponsor") {
+            payload.industry = this.industry; // Add `industry` for sponsor
+          } else if (this.userType === "influencer") {
+            payload.platforms = this.platforms; // Add `platforms` for influencer
+          }
+          console.log("payload complete")
+          try{
+            console.log("Registering as: ",payload)
+            const response = await fetch(url,{
+              method:"POST",
+              headers:{"Content-Type":"application/json"},
+              body:JSON.stringify(payload)
+            })
+            if(response.ok)
+            {
+              
+              this.$router.push('/')
+            }
+            else if(response.status == 400)
+            {
+              const data = await response.json();
+              this.error.email=data['message']
+            }
+          }
+          catch(error)
+          {
+            this.error.email = "Network Error! Please try again.";
+            this.error.password = "Network Error! Please try again.";
+          }
         }
+        
       },
     },
     watch:{
@@ -421,6 +464,28 @@
 
   .custom-multi-select-dark .form-check-label {
     color: #ddd; /* Checkbox label text color in dark theme */
+  }
+
+  /* Error text */
+  .error-text {
+    color: #dc3545;
+    font-size: smaller;
+    font-family: 'Josefin Sans', 'Lucida Sans', 'sans-serif';
+    animation: shake 0.21s 0.1s;
+    margin-top: 0;
+    text-align: left;
+    margin-left: 0.5vw;
+  }
+  @keyframes shake {
+      0%,100% {
+        transform: translateX(0);
+    }
+      25%,75% {
+        transform: translateX(-0.72em);
+    }
+      50% {
+        transform: translateX(1em);
+    }
   }
 </style>
   

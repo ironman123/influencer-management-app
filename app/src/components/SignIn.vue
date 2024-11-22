@@ -72,7 +72,8 @@
           this.error.password="Password Too Short!";
           return;
         }
-        else{
+        else
+        {
           const url = 'http://127.0.0.1:5000/auth/signin';
           const payload = {
             email:this.email,
@@ -85,24 +86,31 @@
               headers:{"Content-Type":"application/json"},
               body:JSON.stringify(payload)
             })
-            if(response.ok){
+            if(response.ok)
+            {
               const data = await response.json();
               // console.log(data);
-              localStorage.setItem("token",data.token);
+              //localStorage.setItem("token",data.token);
               this.$store.dispatch('signIn',data);
               this.$router.push('/dashboard');
               
               //localStorage.setItem("userType",data.user_type);
             }
-            else if(response.status == 401){
-              console.log('Nope')
+            else if(response.status == 401)
+            {
               this.error.email="Incorrect Email!";
               this.error.password="Incorrect Password!";
             }
+            else
+            {
+              this.error.email="Server ERROR!";
+              this.error.password="Server ERROR!";
+            }
           }
-          catch(e)
+          catch(error)
           {
-            console.log(e)
+            this.error.email = "Network Error! Please try again.";
+            this.error.password = "Network Error! Please try again.";
           }
         }
         
