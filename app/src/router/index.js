@@ -4,6 +4,7 @@ import SignIn from '../components/SignIn.vue';
 import RegisterForm from '../components/Register.vue';
 import DashBoard from '../components/DashBoard.vue';
 import store from '../store'
+import CampaignPage from '@/components/Campaign.vue';
 
 
 const routes = [
@@ -17,17 +18,29 @@ const routes = [
     //     next();
     //   }
     // },
+    children:[
+          
+    ]
   },
   {
     path: '/dashboard',
     component: DashBoard,
     props: true,
     meta: { requiresAuth: true },
+    children:[
+      {
+        path: 'campaign',
+        component: CampaignPage,
+        props: true,
+        meta: { requiresAuth: true },
+      }
+    ]
   },
   {
     path: '/register',
     component: RegisterForm,
   },
+  
 ];
 
 const router = createRouter({
@@ -76,7 +89,6 @@ router.beforeEach(async(to, from, next) => {
   {
     next('/dashboard')
   }
-  //const isAuthenticated = await validateToken();
   
   next();
 });

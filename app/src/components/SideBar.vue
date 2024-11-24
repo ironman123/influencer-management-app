@@ -18,17 +18,10 @@
 
 <script>
   import SidebarItem from './SidebarItem.vue';
+  import { mapGetters } from 'vuex';
   export default{
     name: 'SideBar',
     props:{
-      isDarkTheme:{
-        type: Boolean,
-        default: false
-      },
-      userRole:{
-        type:String,
-        required:true
-      }
     },
     data(){
       return {
@@ -51,8 +44,10 @@
       }
     },
     computed: {
+      ...mapGetters(['userType','isDarkTheme']),
       filteredItems() {
-        return this.items.filter((item) => item.roles.includes(this.userRole));
+        console.log(this.userType)
+        return this.items.filter((item) => item.roles.includes(this.userType));
       },
     },
     components:{

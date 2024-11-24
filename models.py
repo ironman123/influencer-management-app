@@ -1,5 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import desc,func,or_,and_
+from sqlalchemy.types import DateTime
 from datetime import datetime
 from werkzeug.security import generate_password_hash
 
@@ -48,11 +49,12 @@ class Campaign(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(120), nullable=False)
     description = db.Column(db.Text, nullable=False)
-    start_date = db.Column(db.DateTime, nullable=False)
-    end_date = db.Column(db.DateTime, nullable=False)
+    start_date = db.Column(DateTime(timezone=True), nullable=False)
+    end_date = db.Column(DateTime(timezone=True), nullable=False)
     budget = db.Column(db.Float, nullable=False)
     visibility = db.Column(db.String(20), nullable=False)  # public or private
     goals = db.Column(db.Text, nullable=False)
+    flagged = db.Column(db.Boolean, nullable=False, default=False)
     sponsor_id = db.Column(db.Integer, db.ForeignKey('sponsors.id'), nullable=False)  # Foreign Key to Sponsor
     sponsor = db.relationship('Sponsor', backref=db.backref('campaigns',cascade="all, delete"))
 
@@ -65,6 +67,7 @@ class AdRequest(db.Model):
     requirements = db.Column(db.Text, nullable=False)
     payment_amount = db.Column(db.Float, nullable=False)
     status = db.Column(db.String(20), nullable=False, default="Pending")  # Pending, Accepted, Rejected
+    flagged = db.Column(db.Boolean, nullable=False, default=False)
     campaign = db.relationship('Campaign', backref=db.backref('ad_requests',cascade="all, delete"))
     influencer = db.relationship('User', backref=db.backref('ad_requests',cascade="all, delete"))  # Influencer is a User
 
@@ -75,7 +78,7 @@ class Message(db.Model):
     ad_request_id = db.Column(db.Integer, db.ForeignKey('ad_requests.id'), nullable=False)
     sender_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     message_text = db.Column(db.Text, nullable=False)
-    timestamp = db.Column(db.DateTime, default=datetime.now)
+    timestamp = db.Column(DateTime(timezone=True), default=datetime.now)
     ad_request = db.relationship('AdRequest', backref=db.backref('messages',cascade="all, delete"))
     sender = db.relationship('User', backref=db.backref('sent_messages',cascade="all, delete"))
 

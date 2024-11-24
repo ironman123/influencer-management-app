@@ -33,7 +33,7 @@ def token_required(f):
 
 def tokenizer(email):
     token = jwt.encode(
-               {'email':email,'exp':datetime.now(timezone.utc) + timedelta(seconds=30)},
+               {'email':email,'exp':datetime.now(timezone.utc) + timedelta(hours=24)},
                secret_key,
                algorithm = "HS256"
            )

@@ -3,13 +3,10 @@
         <SideBar 
             id="side-bar" 
             @changePage="navigatePage" 
-            :isDarkTheme="isDarkTheme"
-            :userRole="userRole"
         >
         </SideBar>
         <router-view
             id="page-content"
-            :isDarkTheme="isDarkTheme"
             >
         </router-view>
         
@@ -18,19 +15,11 @@
 
 <script>
     import SideBar from './SideBar.vue'
+    import { mapGetters } from 'vuex';
     
     export default{
         name: "DashBoard",
         props:{
-            isDarkTheme:{
-                type:Boolean,
-                default: false,
-            },
-            userRole: {
-                type: String,
-                default: 'admin',
-                required: true,
-            },
         },
         data(){
             return{
@@ -44,6 +33,9 @@
             navigatePage(route) {
                 this.$router.push(route);
             },
+        },
+        computed:{
+            ...mapGetters(['isDarkTheme'])
         }
     }
 </script>

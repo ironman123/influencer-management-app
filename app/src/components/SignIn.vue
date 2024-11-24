@@ -36,13 +36,11 @@
 </template>
   
 <script>
+import { mapGetters } from 'vuex';
   export default {
     name: "SignInForm",
     props: {
-      isDarkTheme: {
-        type: Boolean,
-        default: false,
-      },
+      
     },
     data() {
       return {
@@ -115,6 +113,9 @@
         }
         
       }
+    },
+    computed:{
+      ...mapGetters(['isDarkTheme'])
     },
     watch:{
       

@@ -4,7 +4,19 @@
             <img src="../assets/logo.png" alt="logo" height="36vh" style="margin-right: 45px;">
             <a>Aasdasdad</a>
             <a>A asda</a>
-            <a>Adasdasdsad sad</a>
+            
+        </div>
+        <div v-if="isAuthenticated" class="center-content" style="min-width: 100px; margin-left: auto; margin-right: 3rem">
+            <div class="form-inline search-bar" style="display: flex;">
+                <input 
+                    class="form-control mr-sm-2" 
+                    style="margin-right: 1vh;" 
+                    type="search" 
+                    placeholder="Search..." 
+                    aria-label="Search" 
+                    v-model="searchQuery" 
+                >
+            </div>
         </div>
         <div class="right-content content" >
             <button @click="toggleTheme" class="theme-toggle" style=" display: flex; align-items: center; ">
@@ -23,10 +35,13 @@
 <script>
     import sunIcon from '@/assets/sun.png';
     import moonIcon from '@/assets/moon.png';
-    import {mapState} from 'vuex';
+    import {mapGetters,mapActions,mapState} from 'vuex';
 
     export default {
         name: "NavBar",
+        props:{
+            
+        },
         data()
         {
             return{
@@ -34,28 +49,26 @@
                 moonIcon,   
             }
         },
-        props:
-        {
-            isDarkTheme: {
-                type: Boolean,
-                default: false,
-            },
-            
-        },
         computed:{
-            ...mapState(['isAuthenticated']),
+            ...mapState(['searchQuery']),
+            ...mapGetters(['isAuthenticated','isDarkTheme']),
+            searchQuery: {
+                get() {
+                    return this.$store.state.searchQuery; // Get searchQuery from Vuex state
+                },
+                set(value) {
+                    this.setSearchQuery(value); // Dispatch Vuex action to update searchQuery
+                },
+            },
         },
         created(){
         },
         methods:
         {
+            ...mapActions(['toggleTheme','setSearchQuery']),
             signOut() {
                 this.$store.dispatch('signOut');
                 this.$router.push('/');
-            },
-            toggleTheme()
-            {
-                this.$emit("toggle-theme");
             },
             
         },
@@ -82,7 +95,7 @@
     {
         display: flex;
         align-items: center;
-        padding: 0 6vh;
+        padding: 0 4.5vh;
     }
     
     .theme-toggle 

@@ -1,14 +1,10 @@
 <template>
     <div :class="{ 'dark-theme': isDarkTheme }" id="page-container">
-        <NavBar 
-          :isDarkTheme="isDarkTheme" 
-          @toggle-theme="toggleTheme"
-          @sign-out="console.log('Signout Caught at Container')"
-        />
+        <NavBar/>
       
         <main>
           <div class="page-content">
-            <router-view :isDarkTheme="isDarkTheme" :userRole="userRole"/> <!-- This Renders SignIn/Dashboard Conditionally-->
+            <router-view /> 
           </div>
         </main>
 
@@ -20,6 +16,7 @@
   
 <script>
   import NavBar from './Navbar.vue';
+  import { mapGetters } from 'vuex';
   // import DashBoard from './DashBoard.vue';
   
   export default {
@@ -30,15 +27,14 @@
     },
     data() {
       return {
-        isDarkTheme: false,
-        userRole: 'influencer'
+
       };
     },
     methods: {
-      toggleTheme() {
-        this.isDarkTheme = !this.isDarkTheme;
-      },
     },
+    computed:{
+      ...mapGetters(['isDarkTheme'])
+    }
   };
 </script>
   
