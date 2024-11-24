@@ -80,7 +80,7 @@ export default {
 
 /* Optional Hover Effect */
 .sidebar-item:hover {
-  background-color: #fdfdfd;
+  background-color: #ebebeb;
 }
 
 .sidebar-item.dark:hover {
