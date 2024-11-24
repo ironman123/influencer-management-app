@@ -10,7 +10,7 @@
         :name="item.name"
         :icon="item.icon"
         :isCollapsed="isCollapsed"
-        @click="handleItemClick(item.route)"
+        @click="handleItemClick(item.name)"
       />
     </div>
   </div>
@@ -31,7 +31,7 @@
           { name: 'Settings', icon: '/sidebaricons/settings.png', route: '/settings', roles: ['admin', 'influencer'] },
           { name: 'Profile', icon: '/sidebaricons/profile.png', route: '/profile', roles: ['admin', 'influencer', 'sponsor'] },
           { name: 'Manage Users', icon: '/sidebaricons/manage-users.png', route: '/manage-users', roles: ['admin'] },
-          { name: 'Campaigns', icon: '/sidebaricons/campaigns.png', route: '/campaigns', roles: ['sponsor'] },
+          { name: 'Campaigns', icon: '/sidebaricons/campaigns.png', route: 'campaign', roles: ['admin','influencer','sponsor'] },
         ],
       }
     },
@@ -46,7 +46,6 @@
     computed: {
       ...mapGetters(['userType','isDarkTheme']),
       filteredItems() {
-        console.log(this.userType)
         return this.items.filter((item) => item.roles.includes(this.userType));
       },
     },

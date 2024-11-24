@@ -30,8 +30,8 @@
             SideBar,
         },
         methods:{
-            navigatePage(route) {
-                this.$router.push(route);
+            navigatePage(name) {
+                this.$router.push({ name:name });
             },
         },
         computed:{

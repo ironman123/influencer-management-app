@@ -23,13 +23,15 @@ const routes = [
     ]
   },
   {
+    name:'Dashboard',
     path: '/dashboard',
     component: DashBoard,
     props: true,
     meta: { requiresAuth: true },
     children:[
       {
-        path: 'campaign',
+        name:'Campaigns',
+        path: 'campaigns',
         component: CampaignPage,
         props: true,
         meta: { requiresAuth: true },
