@@ -1,7 +1,7 @@
 <template>
   <div :class="['sidebar', { collapsed: isCollapsed }, {dark: isDarkTheme}]">
     <button @click="toggleSidebar" class="toggle-btn">
-      <img src="/sidebaricons/toggle.png" alt="Toggle" height="30vh"/>
+      <img src="/sidebaricons/toggle.png" alt="Toggle" height="30vh" class="" :class="['toggle-icon', {dark :isDarkTheme}  ]"/>
     </button>
     <div class="sidebar-items">
       <SidebarItem
@@ -31,8 +31,8 @@
           { name: 'Users', icon: '/sidebaricons/users.png', route: 'users', roles: ['admin'] },
           { name: 'Campaigns', icon: '/sidebaricons/campaigns.png', route: 'campaigns', roles: ['admin','Influencer','Sponsor'] },
           { name: 'Requests', icon: '/sidebaricons/requests.png', route: 'requests', roles: ['admin','Influencer','Sponsor'] },
-          { name: 'Settings', icon: '/sidebaricons/settings.png', route: '/settings', roles: ['admin', 'Influencer'] },
-          { name: 'Profile', icon: '/sidebaricons/profile.png', route: '/profile', roles: ['admin', 'Influencer', 'Sponsor'] },
+          // { name: 'Settings', icon: '/sidebaricons/settings.png', route: '/settings', roles: ['admin', 'Influencer'] },
+          // { name: 'Profile', icon: '/sidebaricons/profile.png', route: '/profile', roles: ['admin', 'Influencer', 'Sponsor'] },
           
         ],
       }
@@ -61,19 +61,26 @@
   .sidebar {
     width: 15rem;
     transition: width 0.3s ease;
-    background-color: #f4f4f4;
+    background-color: #eeeeee;
     /* color:rgb(21, 40, 56); */
     display: flex;
     flex-direction: column;
     align-items: center;
     padding: 1rem;
   }
+
+  .toggle-icon.dark{
+    filter: invert(10%);
+  }
+  .toggle-icon{
+    filter: invert(90%);
+  }
   .sidebar.collapsed {
     width: 3.75rem;
   }
 
   .sidebar.dark {
-    background-color: #1e1e1e;
+    background-color: #161616;
     color: #cad7d8;
   }
   .sidebar.dark .toggle-btn {
