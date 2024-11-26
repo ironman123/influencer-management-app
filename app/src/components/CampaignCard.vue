@@ -40,7 +40,7 @@
     </div>
     <div :class="['card-footer d-flex justify-content-between align-items-center', { dark: isDarkTheme }]">
       <div>
-        <button class="btn btn-primary btn-sm" @click="viewCampaign">View</button>
+        <!-- <button class="btn btn-primary btn-sm" @click="viewCampaign">View</button> -->
         <button
           v-if="isSponsor"
           class="btn btn-warning btn-sm"
@@ -66,7 +66,7 @@
       <div class="row" style="width: 60%;">
         <div class="col">
           <p class="card-text">
-            <strong>Start Date:</strong> {{ formatDate(campaign.start_date) }} <br />
+            <strong>Start Date:</strong> {{ formatDate(campaign.start_date) }}
           </p>    
         </div>
         <div class="col">
@@ -118,13 +118,9 @@ export default {
       const options = { year: "numeric", month: "long", day: "numeric" };
       return new Date(date).toLocaleDateString(undefined, options);
     },
-    viewCampaign() {
-      // Implement viewing logic
-      alert(`Viewing campaign: ${this.campaign.name}`);
-    },
     editCampaign() {
-      // Implement editing logic
-      alert(`Editing campaign: ${this.campaign.name}`);
+      this.$emit('edit-campaign',this.campaign)
+      
     },
     toggleVisibility() {
       // Implement visibility toggle logic

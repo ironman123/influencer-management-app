@@ -22,6 +22,7 @@
         :userType="userType"
         :userName="userName"
         :userID="userID"
+        
       />
     </div>
     <button :class="['add-btn', { dark: isDarkTheme }]" @click="showAddCampaignForm = true">+</button>
@@ -56,7 +57,7 @@ export default {
     ...mapGetters(["isDarkTheme","token"]),
     tabs() {
       const baseTabs = ["All", "Active", "Completed"];
-      if (this.userType === "sponsor") {
+      if (this.userType === "Sponsor") {
         baseTabs.push("My", "Private", "Flagged");
       } else if (this.userType === "admin") {
         baseTabs.push("Private", "Flagged");
@@ -106,7 +107,7 @@ export default {
         const url = "http://127.0.0.1:5000/auth/campaigns";
         const headers = {
           "Content-Type": "application/json",
-          // "Authorization":this.token,
+          "Authorization":this.token,
           // "search-query": this.searchQuery,
         };
         const response = await fetch(url, {
