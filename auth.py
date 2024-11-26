@@ -17,16 +17,16 @@ def login():
       password = data['password']
       user = User.query.filter_by(email = email).first()
 
-      
       if user and check_password_hash(user.password,password):
-         if user.flag == 'unauthorized':
+         if user.flag == 'Unauthorized':
             return jsonify({'message':'Unauthorized Access!'}),403
          token = tokenizer(email)
          userType = user.user_type
          userName=user.full_name
          userID = user.id
          return jsonify({'message':'SignIn Successful!','token':token,'userID':userID,'userName':userName,'email':email,'userType':userType}),200
-      return jsonify({'message':'Invalid Credentials'}),401
+      else:
+         return jsonify({'message':'Invalid Credentials'}),401
 
 @auth.route('/register', methods=['POST'])
 def register():
@@ -98,7 +98,7 @@ def check_token(decoded_data):
     print(decoded_data)
     return jsonify({'message': 'Token is valid!', 'data': decoded_data}), 200
 
-@auth.route('/campaigns',methods=['GET','POST'])
+@auth.route('/campaigns',methods=['GET','POST','PUT'])
 @token_required
 def campaigns(data):
    if request.method == "GET":
@@ -158,34 +158,68 @@ def campaigns(data):
       goals=int(data.get('goals'))
 
       # Validate required fields
-   if not all([name, description, start_date, end_date,budget,visibility,goals]):
-      return jsonify({'message': 'All fields are required'}), 400
+      #print([name, description, start_date, end_date,budget,visibility,goals])
+      #if not all([name, description, start_date, end_date,budget,visibility,goals]):
+      #   return jsonify({'message': 'All fields are required'}), 400
    
-   sponsor = Sponsor.query.join(User).filter_by(email=email).first()
-   if not sponsor:
-      return jsonify({'message': 'Sponsor not found'}), 404
-   elif sponsor.flag == 'flagged':
-      return jsonify({'message': 'Flagged User Action Not Allowed!'}), 403
-   
-   new_campaign = Campaign(
-        name=name,
-        description=description,
-        start_date=start_date,
-        end_date=end_date,
-        budget=budget,
-        visibility=visibility,
-        goals=goals,
-        sponsor_id=sponsor.id
-    )
+      sponsor = Sponsor.query.join(User).filter_by(email=email).first()
+      if not sponsor:
+         return jsonify({'message': 'Sponsor not found'}), 404
+      elif sponsor.user.flag == 'Flagged':
+         return jsonify({'message': 'Flagged User Action Not Allowed!'}), 403
 
-    # Add the campaign to the database
-   try:
-      db.session.add(new_campaign)
+      new_campaign = Campaign(
+           name=name,
+           description=description,
+           start_date=start_date,
+           end_date=end_date,
+           budget=budget,
+           visibility=visibility,
+           goals=goals,
+           sponsor_id=sponsor.id
+       )
+
+       # Add the campaign to the database
+      try:
+         db.session.add(new_campaign)
+         db.session.commit()
+         return jsonify({'message': 'Campaign created successfully', 'campaign_id': new_campaign.id}), 201
+      except Exception as e:
+         db.session.rollback()
+         return jsonify({'message': 'Failed to create campaign', 'error': str(e)}), 500
+      
+   if request.method=='PUT':
+      email=data['email']
+      data=request.json
+
+      id=data['id']
+      name=data.get('name')
+      description=data.get('description')
+      visibility=data.get('visibility')
+      start_date=datetime.fromisoformat(data.get('startDate'))
+      end_date=datetime.fromisoformat(data.get('endDate'))
+      budget=float(data.get('budget'))
+      goals=int(data.get('goals'))
+
+      sponsor = Sponsor.query.join(User).filter_by(email=email).first()
+      campaign = Campaign.query.filter_by(id=id).first()
+      if not sponsor:
+         return jsonify({'message': 'Sponsor not found'}), 404
+      elif sponsor.user.flag == 'Flagged':
+         return jsonify({'message': 'Flagged User Action Not Allowed!'}), 403
+      elif not campaign:
+         return jsonify({'message': 'Campaign not found'}), 404
+      
+      campaign.name=name
+      campaign.description=description
+      campaign.visibility=visibility
+      campaign.start_date=start_date
+      campaign.end_date=end_date
+      campaign.budget=budget
+      campaign.goals=goals
       db.session.commit()
-      return jsonify({'message': 'Campaign created successfully', 'campaign_id': new_campaign.id}), 201
-   except Exception as e:
-      db.session.rollback()
-      return jsonify({'message': 'Failed to create campaign', 'error': str(e)}), 500
+      return jsonify({'message': 'Campaign Edited successfully', 'campaign_id': campaign.id}), 201
+
 
 @auth.route('/users',methods=['GET','PUT'])
 @token_required

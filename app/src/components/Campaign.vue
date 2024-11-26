@@ -22,14 +22,14 @@
         :userType="userType"
         :userName="userName"
         :userID="userID"
-        
+        @edit-campaign="editCampaign"
       />
     </div>
     <button :class="['add-btn', { dark: isDarkTheme }]" @click="showAddCampaignForm = true">+</button>
     <CampaignForm 
       v-if="showAddCampaignForm" 
-      @close="showAddCampaignForm = false"
-      @campaign-added="addCampaign"
+      :data="data"
+      @close="closePopup"
     />
   </div>
 </template>
@@ -47,6 +47,7 @@ export default {
   },
   data() {
     return {
+      data:null,
       activeTab: "All",
       campaigns: [],
       showAddCampaignForm: false,
@@ -99,6 +100,14 @@ export default {
     this.fetchCampaigns();
   },
   methods: {
+    editCampaign(d){
+      this.showAddCampaignForm = true
+      this.data=d;
+    },
+    closePopup(){
+      this.showAddCampaignForm = false;
+      this.data=null;
+    },
     setActiveTab(tab) {
       this.activeTab = tab;
     },

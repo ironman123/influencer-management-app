@@ -79,18 +79,24 @@
   <script>
   import { mapGetters } from 'vuex';
   export default {
-    name: "RegisterForm",
+    name: "CampaignForm",
     props:{
+      data:{
+        type:Object,
+        default: null,
+      }
     },
     data() {
       return {
-        name: "", 
-        description: "", 
-        goals:0,
-        budget: 0,
-        startDate: "", 
-        endDate: "", 
-        visibility:"public",
+        name: this.data ? this.data.name : "", 
+        description: this.data ? this.data.description : "", 
+        goals: this.data ? this.data.goals : 0,
+        budget: this.data ? this.data.budget : 0,
+        // startDate: this.data ? new Date(this.data.startDate).toISOString().split('T')[0] : "", 
+        // endDate: this.data ? new Date(this.data.endDate).toISOString().split('T')[0] : "",
+        startDate:"", 
+        endDate:"", 
+        visibility: this.data ? this.data.visibility : "public",
         error:{
             name: "", 
             description: "", 
@@ -212,6 +218,8 @@
           event.preventDefault();
           if (this.validateForm()) {
             // handle form submission
+            const isEdit = !!this.data; // Determine if it's an edit
+            console.log("isEdit:",isEdit);
             const url = 'http://127.0.0.1:5000/auth/campaigns';
             const payload = {
               name:this.name,
@@ -222,11 +230,16 @@
               endDate:this.endDate,
               visibility:this.visibility
             }
+            if (isEdit)
+            {
+              payload.id=this.data.id;
+            }
+            const method = isEdit ? "PUT" : "POST";
             console.log(payload)
             try{
                 console.log("Adding Campaign: ",payload)
                 const response = await fetch(url,{
-                    method:"POST",
+                    method:method,
                     headers:{
                         "Content-Type":"application/json",
                         "Authorization":this.token
@@ -254,7 +267,6 @@
                 // this.error.password = "Network Error! Please try again.";
             }
           }
-
         },
     },
     computed:{
