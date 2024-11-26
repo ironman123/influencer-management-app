@@ -42,7 +42,7 @@
       <div>
         <!-- <button class="btn btn-primary btn-sm" @click="viewCampaign">View</button> -->
         <button
-          v-if="isSponsor"
+          v-if="isSponsor && campaign.status !== 'Completed'"
           class="btn btn-warning btn-sm"
           @click="editCampaign"
         >
