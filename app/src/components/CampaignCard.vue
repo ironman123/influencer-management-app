@@ -1,21 +1,42 @@
 <template>
   <div :class="['campaign-card card mb-3', { dark: isDarkTheme }]">
     <div :class="['card-header d-flex justify-content-between align-items-center', { dark: isDarkTheme }]">
-      <h5 class="card-title mb-0">{{ campaign.name }}</h5>
-      <span :class="['badge', { 'bg-success': campaign.visibility === 'public', 'bg-secondary': campaign.visibility !== 'public' }, { dark: isDarkTheme }]">
-        {{ campaign.visibility }}
-      </span>
+    <!-- Card Title aligned to the start -->
+    <h5 class="card-title mb-0">{{ campaign.name }}</h5>
+    
+    <!-- Visibility Badge aligned to the end -->
+      <div>
+        <span style="margin-right: 0.5rem;" :class="['badge', { 'bg-success': campaign.visibility === 'public', 'bg-secondary': campaign.visibility !== 'public' }, { dark: isDarkTheme }]">
+          {{ campaign.visibility }}
+        </span>
+
+        <!-- Status Badge aligned to the end with color changes based on the status -->
+        <span :class="[
+              'badge',
+              { 'bg-danger': campaign.status === 'Flagged', 
+                'bg-warning': campaign.status === 'Active', 
+                'bg-success': campaign.status === 'Completed' },
+              { dark: isDarkTheme }
+            ]"
+        >
+            {{ campaign.status }}
+        </span>
+      </div>
     </div>
     <div :class="['card-body', { dark: isDarkTheme }]">
+      <p class="card-text"><strong>Sponsor:</strong> {{ campaign.owner }}</p>
       <strong>Description:</strong>
       <p class="card-text"> {{ campaign.description }}</p>
-      <strong>Goals:</strong>
-      <p class="card-text"> {{ campaign.goals }}</p>
-      <p class="card-text">
-        <strong>Start Date:</strong> {{ formatDate(campaign.start_date) }} <br />
-        <strong>End Date:</strong> {{ formatDate(campaign.end_date) }}
-      </p>
-      <p class="card-text"><strong>Budget:</strong> ${{ campaign.budget }}</p>
+      <div class="row" style="width: 100%;">
+        <div class="col">
+          <p class="card-text"><strong>Goals:</strong> {{ campaign.goals }}</p>
+        </div>
+        <div class="col">
+          <p class="card-text"><strong>Budget:</strong> ${{ campaign.budget }}</p>
+        </div>
+      </div>
+      
+      
     </div>
     <div :class="['card-footer d-flex justify-content-between align-items-center', { dark: isDarkTheme }]">
       <div>
@@ -35,12 +56,24 @@
           Toggle Flag
         </button>
         <button
-          v-if="isInfluencer || isSponsor"
+          v-if="(isInfluencer || isSponsor) && (campaign.status !== 'Flagged' && campaign.status !== 'Completed')"
           class="btn btn-info btn-sm"
           @click="requestAd"
         >
           Ad Request
         </button>
+      </div>
+      <div class="row" style="width: 60%;">
+        <div class="col">
+          <p class="card-text">
+            <strong>Start Date:</strong> {{ formatDate(campaign.start_date) }} <br />
+          </p>    
+        </div>
+        <div class="col">
+          <p class="card-text">
+            <strong>End Date:</strong> {{ formatDate(campaign.end_date) }}
+          </p>    
+        </div>
       </div>
     </div>
   </div>
@@ -162,8 +195,8 @@ export default {
 .card-text {
   overflow: auto;
   text-overflow: ellipsis;
-  word-wrap: break-word;
-  word-break: break-word;
+  /* word-break: break-word;
+  word-wrap: break-word; */
   max-width: 60rem;
   max-height: 6rem;
 }

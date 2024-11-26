@@ -24,37 +24,65 @@
         :userID="userID"
       />
     </div>
+    <button :class="['add-btn', { dark: isDarkTheme }]" @click="showAddCampaignForm = true">+</button>
+    <CampaignForm 
+      v-if="showAddCampaignForm" 
+      @close="showAddCampaignForm = false"
+      @campaign-added="addCampaign"
+    />
   </div>
 </template>
 
 <script>
 import { mapState, mapGetters } from "vuex";
 import CampaignCard from "./CampaignCard.vue";
+import CampaignForm from "./CampaignForm.vue";
 
 export default {
   name: "CampaignPage",
   components: {
     CampaignCard,
+    CampaignForm
   },
   data() {
     return {
-      tabs: ["All", "My", "Active", "Completed"],
       activeTab: "All",
       campaigns: [],
+      showAddCampaignForm: false,
     };
   },
   computed: {
     ...mapState(["userType", "user", "userName", "userID", "searchQuery"]),
-    ...mapGetters(["isDarkTheme"]),
+    ...mapGetters(["isDarkTheme","token"]),
+    tabs() {
+      const baseTabs = ["All", "Active", "Completed"];
+      if (this.userType === "Sponsor") {
+        baseTabs.push("My", "Private", "Flagged");
+      } else if (this.userType === "admin") {
+        baseTabs.push("Private", "Flagged");
+      }
+      return baseTabs;
+    },
     filteredCampaigns() {
       let filtered = this.campaigns;
 
       // Filter by tab
       if (this.activeTab === "My") {
-        filtered = filtered.filter((c) => c.owner === this.user);
-      } else if (this.activeTab !== "All") {
-        filtered = filtered.filter((c) => c.status === this.activeTab);
+        filtered = filtered.filter((c) => c.ownerID === this.user);
       }
+      else if(this.activeTab === "Private"){
+        filtered = filtered.filter((c) => c.visibility === "private");
+      }
+      else if (this.activeTab === "Active") {
+        filtered = filtered.filter((c) => c.status === "Active");
+      }
+      else if (this.activeTab === "Completed") {
+        filtered = filtered.filter((c) => c.status === "Completed");
+      }
+      else if(this.activeTab === "Flagged"){
+        filtered = filtered.filter((c) => c.status === "Flagged");
+      }
+      
 
       // Filter by search query
       if (this.searchQuery) {
@@ -78,6 +106,7 @@ export default {
         const url = "http://127.0.0.1:5000/auth/campaigns";
         const headers = {
           "Content-Type": "application/json",
+          "Authorization":this.token,
           "search-query": "yololo",
         };
         const response = await fetch(url, {
@@ -98,6 +127,30 @@ export default {
 </script>
 
 <style scoped>
+.add-btn {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  width: 3rem;
+  height: 3rem;
+  border: none;
+  border-radius: 50%;
+  background: #47c002;
+  color: #fff;
+  font-size: 1.5rem;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+.add-btn.dark{
+  background: #4124e2;
+}
+.add-btn:hover {
+  background: #4ed400;
+}
+.add-btn.dark:hover {
+  background: #4d2ff7;
+}
 .campaign-page {
   flex-grow: 1;
   display: flex;
