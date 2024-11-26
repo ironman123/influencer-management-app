@@ -28,11 +28,11 @@
         isCollapsed: false,
         items: [
           { name: 'Home', icon: '/sidebaricons/home.png', route: '/home', roles: ['admin', 'influencer', 'sponsor'] },
+          { name: 'Users', icon: '/sidebaricons/users.png', route: 'users', roles: ['admin'] },
           { name: 'Campaigns', icon: '/sidebaricons/campaigns.png', route: 'campaigns', roles: ['admin','influencer','sponsor'] },
           { name: 'Requests', icon: '/sidebaricons/requests.png', route: 'requests', roles: ['admin','influencer','sponsor'] },
           { name: 'Settings', icon: '/sidebaricons/settings.png', route: '/settings', roles: ['admin', 'influencer'] },
           { name: 'Profile', icon: '/sidebaricons/profile.png', route: '/profile', roles: ['admin', 'influencer', 'sponsor'] },
-          { name: 'Manage Users', icon: '/sidebaricons/manage-users.png', route: '/manage-users', roles: ['admin'] },
           
         ],
       }
