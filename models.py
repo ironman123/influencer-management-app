@@ -15,6 +15,7 @@ class User(db.Model):
     full_name = db.Column(db.String(120), nullable=False)
     password = db.Column(db.String(128), nullable=False)
     user_type = db.Column(db.String(20), nullable=False)  # admin, sponsor, influencer
+    flag = db.Column(db.String(20),nullable=False) #initially unauthorized for sponsor and authorized for influencer, then can be set to flagged/authorized
 
 # Sponsor-Specific Table
 class Sponsor(db.Model):
@@ -91,7 +92,8 @@ def create_admin():
             email=admin_email,
             full_name="Admin User",
             password=generate_password_hash("admin"),
-            user_type="admin"
+            user_type="admin",
+            flag='authorized'
         )
         db.session.add(admin)
     for platform in ['instagram','facebook','youtube']:

@@ -242,6 +242,11 @@
                     const data = await response.json();
                     this.error.name=data['message']
                 }
+                else if(response.status == 403)
+                {
+                  const data = await response.json();
+                  this.error.name=data['message']
+                }
             }
             catch(error)
             {

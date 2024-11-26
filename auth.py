@@ -3,11 +3,11 @@ from models import *
 from utils import token_required,tokenizer
 from werkzeug.security import check_password_hash
 from datetime import timedelta,timezone
-from sqlalchemy import or_
+from sqlalchemy import or_,create_engine, text
 
 
 auth = Blueprint('auth', __name__)
-
+engine = create_engine("sqlite:///app.db")
 
 @auth.route('/signin', methods=['POST'])
 def login():
@@ -17,7 +17,10 @@ def login():
       password = data['password']
       user = User.query.filter_by(email = email).first()
 
+      
       if user and check_password_hash(user.password,password):
+         if user.flag == 'unauthorized':
+            return jsonify({'message':'Unauthorized Access!'}),403
          token = tokenizer(email)
          userType = user.user_type
          userName=user.full_name
@@ -53,13 +56,14 @@ def register():
       email=email,
       full_name=full_name,
       password=hashed_password,
-      user_type=user_type
+      user_type=user_type,
+      flag='Authorized' if user_type == 'Influencer' else 'Unauthorized'
    )
    db.session.add(new_user)
    db.session.commit()
    
    # Handle specific user types
-   if user_type == "sponsor":
+   if user_type == "Sponsor":
       industry = data.get('industry')
       if not industry:
          return jsonify({'message': 'Industry is required for sponsor'}), 400
@@ -68,7 +72,7 @@ def register():
          industry=industry
       )
       db.session.add(sponsor)
-   elif user_type == "influencer":
+   elif user_type == "Influencer":
       platforms = data.get('platforms', [])
       influencer = Influencer(
          id=new_user.id  # Use the ID of the created User
@@ -108,7 +112,7 @@ def campaigns(data):
       
       email = data.get("email")
       if not email:
-         return jsonify({"error": "Unauthorized access"}), 403
+         return jsonify({"message": "Unauthorized access"}), 403
       userType = User.query.filter_by(email=email).first().user_type
        
       # Query for public campaigns or private campaigns owned by the user or all if user is admin
@@ -144,7 +148,6 @@ def campaigns(data):
    if request.method == "POST":
       email = data.get("email")
       data = request.json
-      print("Form Data for Campaign: ",data)
 
       name=data.get('name')
       description=data.get('description')
@@ -161,6 +164,8 @@ def campaigns(data):
    sponsor = Sponsor.query.join(User).filter_by(email=email).first()
    if not sponsor:
       return jsonify({'message': 'Sponsor not found'}), 404
+   elif sponsor.flag == 'flagged':
+      return jsonify({'message': 'Flagged User Action Not Allowed!'}), 403
    
    new_campaign = Campaign(
         name=name,
@@ -182,38 +187,85 @@ def campaigns(data):
       db.session.rollback()
       return jsonify({'message': 'Failed to create campaign', 'error': str(e)}), 500
 
+@auth.route('/users',methods=['GET','PUT'])
+@token_required
+def users(data):
+   email =data.get('email')
+   if not email:
+         return jsonify({"meassage": "Unauthorized access"}), 403
+   user = User.query.filter_by(email=email).first()
+   if user.user_type != 'admin':
+      return jsonify({"message": "Unauthorized access"}), 403
+   
+   if request.method == 'GET':
+      users = User.query.all()
+      users_data=[
+         {
+            'id':user.id,
+            'name':user.full_name,
+            'userType':user.user_type,
+            'flag':user.flag
+         }
+         for user in users
+      ]
+      return jsonify(users_data),201
+   
+   elif request.method =='PUT':
+      data = request.json
+      id = data['id']
+      flag=data['flag']
+      user = User.query.filter_by(id=id).first()
+
+      if not user:
+         return jsonify({'message': 'User not found'}), 404
+      if not flag:
+         return jsonify({'message': 'Flag value is required'}), 400
+      
+      user.flag = flag
+      db.session.commit()
+      return jsonify({'message': 'Flag updated successfully', 'flag': user.flag}),201
+
 
 
 @auth.route('/temp', methods=['GET'])
 @token_required
 def temp(data):
    if request.method == 'GET':
+      
       campaign1 = Campaign(
-          name="Winter Sale",
-          description="Promoting winter-themed products.",
-          start_date=datetime.now(timezone.utc),
-          end_date=datetime.now(timezone.utc) + timedelta(days=30),
-          budget=5000.0,
-          visibility="public",
-          goals=5,
-          sponsor_id=2
+         name="One Piece",
+         description="Promoting winter-themed products.",
+         start_date=datetime.now(timezone.utc),
+         end_date=datetime.now(timezone.utc) + timedelta(days=30),
+         budget=5000.0,
+         visibility="public",
+         goals=5,
+         flagged=True,
+         sponsor_id=3
       )
-
       campaign2 = Campaign(
-          name="Summer Sale",
-          description="Massive discounts for summer products.",
-          start_date=datetime.now(timezone.utc) - timedelta(days=60),
-          end_date=datetime.now(timezone.utc) - timedelta(days=30),
-          budget=8000.0,
-          visibility="private",
-          goals=10,
-          flagged=True,
-          sponsor_id=2
+         name="Attak on Titan",
+         description="Massive discounts for summer products.",
+         start_date=datetime.now(timezone.utc) - timedelta(days=60),
+         end_date=datetime.now(timezone.utc) - timedelta(days=30),
+         budget=8000.0,
+         visibility="private",
+         goals=10,
+         sponsor_id=3
       )
-
       db.session.add(campaign1)
       db.session.add(campaign2)
       db.session.commit()
+      
+      
+      #with engine.connect() as connection:
+      ## Add the 'flag' column to the User table
+      #   add_column_query = """
+      #   ALTER TABLE users
+      #   ADD COLUMN flag VARCHAR(20) NOT NULL DEFAULT 'authorized';
+      #   """
+      #   connection.execute(text(add_column_query))
+      #   print("Column 'flag' added to User table successfully.")
    return jsonify({'message': 'Entries Added successfully'}), 201 
 
 
