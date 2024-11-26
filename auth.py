@@ -3,6 +3,7 @@ from models import *
 from utils import token_required,tokenizer
 from werkzeug.security import check_password_hash
 from datetime import timedelta,timezone
+from sqlalchemy import or_
 
 
 auth = Blueprint('auth', __name__)
@@ -27,7 +28,7 @@ def login():
 @auth.route('/register', methods=['POST'])
 def register():
    if request.method=='POST':
-     data = request.json
+      data = request.json
    
    # Extract the common fields
    email = data.get('email')
@@ -75,7 +76,7 @@ def register():
       db.session.add(influencer)
       # Add influencer's platforms if provided
       for platform in platforms:
-         platform = Platform.query.filter_by(name =platform).first()
+         platform = Platform.query.filter_by(name=platform).first()
          if platform:
             influencer.platforms.append(platform)
    else:
@@ -93,8 +94,9 @@ def check_token(decoded_data):
     print(decoded_data)
     return jsonify({'message': 'Token is valid!', 'data': decoded_data}), 200
 
-@auth.route('/campaigns',methods=['GET'])
-def campaigns():
+@auth.route('/campaigns',methods=['GET','POST'])
+@token_required
+def campaigns(data):
    if request.method == "GET":
       #data = request.json
       #search_query = request.headers.get('search-query','').lower()
@@ -103,7 +105,22 @@ def campaigns():
       #    print("Search Query: ",search_query)
 
       #print("Data: ",data)
-      campaigns = Campaign.query.all()
+      
+      email = data.get("email")
+      if not email:
+         return jsonify({"error": "Unauthorized access"}), 403
+      userType = User.query.filter_by(email=email).first().user_type
+       
+      # Query for public campaigns or private campaigns owned by the user or all if user is admin
+      if userType != "admin":
+         campaigns = (Campaign.query.join(Sponsor).join(User)).filter(
+            or_(Campaign.visibility == "public",
+               and_(Campaign.visibility == "private",User.email == email)
+               )
+            ).all()
+      else:
+         campaigns = Campaign.query.all()
+
       campaigns_data = [
         {
             'id': campaign.id,
@@ -116,12 +133,55 @@ def campaigns():
             'goals': campaign.goals,
             'sponsor_id': campaign.sponsor_id,
             'status': "Flagged" if campaign.flagged else "Active" if campaign.end_date.replace(tzinfo=timezone.utc) > datetime.now(timezone.utc) else "Completed",
-            'owner': campaign.sponsor.user.email
+            'ownerID': campaign.sponsor.user.email,
+            'owner':campaign.sponsor.user.full_name
         }
         
         for campaign in campaigns
       ]
       return jsonify(campaigns_data),201
+   
+   if request.method == "POST":
+      email = data.get("email")
+      data = request.json
+      print("Form Data for Campaign: ",data)
+
+      name=data.get('name')
+      description=data.get('description')
+      visibility=data.get('visibility')
+      start_date=datetime.fromisoformat(data.get('startDate'))
+      end_date=datetime.fromisoformat(data.get('endDate'))
+      budget=float(data.get('budget'))
+      goals=int(data.get('goals'))
+
+      # Validate required fields
+   if not all([name, description, start_date, end_date,budget,visibility,goals]):
+      return jsonify({'message': 'All fields are required'}), 400
+   
+   sponsor = Sponsor.query.join(User).filter_by(email=email).first()
+   if not sponsor:
+      return jsonify({'message': 'Sponsor not found'}), 404
+   
+   new_campaign = Campaign(
+        name=name,
+        description=description,
+        start_date=start_date,
+        end_date=end_date,
+        budget=budget,
+        visibility=visibility,
+        goals=goals,
+        sponsor_id=sponsor.id
+    )
+
+    # Add the campaign to the database
+   try:
+      db.session.add(new_campaign)
+      db.session.commit()
+      return jsonify({'message': 'Campaign created successfully', 'campaign_id': new_campaign.id}), 201
+   except Exception as e:
+      db.session.rollback()
+      return jsonify({'message': 'Failed to create campaign', 'error': str(e)}), 500
+
 
 
 @auth.route('/temp', methods=['GET'])
@@ -129,26 +189,26 @@ def campaigns():
 def temp(data):
    if request.method == 'GET':
       campaign1 = Campaign(
-          name="New Galaxy S25",
+          name="Winter Sale",
           description="Promoting winter-themed products.",
           start_date=datetime.now(timezone.utc),
           end_date=datetime.now(timezone.utc) + timedelta(days=30),
           budget=5000.0,
           visibility="public",
-          goals="Increase brand awareness",
-          sponsor_id=3
+          goals=5,
+          sponsor_id=2
       )
 
       campaign2 = Campaign(
-          name="New BMW Z5",
+          name="Summer Sale",
           description="Massive discounts for summer products.",
           start_date=datetime.now(timezone.utc) - timedelta(days=60),
           end_date=datetime.now(timezone.utc) - timedelta(days=30),
           budget=8000.0,
           visibility="private",
-          goals="Boost sales",
+          goals=10,
           flagged=True,
-          sponsor_id=3
+          sponsor_id=2
       )
 
       db.session.add(campaign1)

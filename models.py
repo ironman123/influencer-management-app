@@ -53,7 +53,7 @@ class Campaign(db.Model):
     end_date = db.Column(DateTime(timezone=True), nullable=False)
     budget = db.Column(db.Float, nullable=False)
     visibility = db.Column(db.String(20), nullable=False)  # public or private
-    goals = db.Column(db.Text, nullable=False)
+    goals = db.Column(db.Integer, nullable=False)
     flagged = db.Column(db.Boolean, nullable=False, default=False)
     sponsor_id = db.Column(db.Integer, db.ForeignKey('sponsors.id'), nullable=False)  # Foreign Key to Sponsor
     sponsor = db.relationship('Sponsor', backref=db.backref('campaigns',cascade="all, delete"))
