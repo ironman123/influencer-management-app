@@ -5,6 +5,7 @@ import RegisterForm from '../components/Register.vue';
 import DashBoard from '../components/DashBoard.vue';
 import store from '../store'
 import CampaignPage from '@/components/Campaign.vue';
+import RequestPage from '@/components/Request.vue';
 import UserPage from '@/components/Users.vue';
 
 
@@ -34,6 +35,13 @@ const routes = [
         name:'Campaigns',
         path: 'campaigns',
         component: CampaignPage,
+        props: true,
+        meta: { requiresAuth: true },
+      },
+      {
+        name:'Requests',
+        path: 'requests',
+        component: RequestPage,
         props: true,
         meta: { requiresAuth: true },
       },
