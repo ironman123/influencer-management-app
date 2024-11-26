@@ -20,9 +20,9 @@
                 <div class="error-text" v-if="error.userType">{{ error.userType }}</div>
               </div>
             </div>        
-            <div v-if="userType === 'influencer'"  class="col">
+            <div v-if="userType === 'Influencer'"  class="col">
               <!-- Influencer Platform Selection -->
-              <div v-show="userType === 'influencer'" class="mb-3">
+              <div v-show="userType === 'Influencer'" class="mb-3">
                 <label for="platform" class="form-label">Select Platform(s)</label>
                 <div
                   id="platform"
@@ -47,7 +47,7 @@
               </div>
               <div class="error-text" v-if="error.platforms">{{ error.platforms }}</div>
             </div>
-            <div v-if="userType === 'sponsor'" class="col" @focusout="validateForm">
+            <div v-if="userType === 'Sponsor'" class="col" @focusout="validateForm">
                 <!-- Sponsor Industry Selection -->
                 <div class="mb-3">
                     <label for="industry" class="form-label">Select Industry</label>
@@ -108,10 +108,10 @@
     },
     data() {
       return {
-        userType: "influencer", // influencer or sponsor
+        userType: "Influencer", // influencer or sponsor
         userTypeOptions:[
-          { value: "influencer", label: "Influencer" },
-          { value: "sponsor", label: "Sponsor" },
+          { value: "Influencer", label: "Influencer" },
+          { value: "Sponsor", label: "Sponsor" },
         ],
         platforms: [], // influencer platform
         platformOptions: [
@@ -158,7 +158,7 @@
       },
       validateOptions()
       {
-        if(this.userType === 'influencer')
+        if(this.userType === 'Influencer')
         {
           this.error.platforms="";
           if(this.platforms.length == 0)
@@ -178,7 +178,7 @@
           }
           return true;
         }
-        else if(this.userType === "sponsor")
+        else if(this.userType === "Sponsor")
         { 
           this.error.industry = "";
           const validOptions = this.industryOptions.map(a=>a.value);
@@ -251,9 +251,9 @@
             fullname:this.fullname,
             userType:this.userType,
           }
-          if (this.userType === "sponsor") {
+          if (this.userType === "Sponsor") {
             payload.industry = this.industry; // Add `industry` for sponsor
-          } else if (this.userType === "influencer") {
+          } else if (this.userType === "Influencer") {
             payload.platforms = this.platforms; // Add `platforms` for influencer
           }
           console.log("payload complete")

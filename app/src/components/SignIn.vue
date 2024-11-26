@@ -96,8 +96,15 @@ import { mapGetters } from 'vuex';
             }
             else if(response.status == 401)
             {
-              this.error.email="Incorrect Email!";
-              this.error.password="Incorrect Password!";
+              const data = response.json();
+              this.error.email=data['message'];
+              this.error.password=data['message'];
+            }
+            else if(response.status == 403)
+            {
+              const data = await response.json();
+              this.error.email=data['message'];
+              this.error.password=data['message'];
             }
             else
             {
