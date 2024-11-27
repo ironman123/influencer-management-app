@@ -26,7 +26,7 @@
         @toggle-flag="toggleFlag"
       />
     </div>
-    <button :class="['add-btn', { dark: isDarkTheme }]" @click="showAddCampaignForm = true">+</button>
+    <button v-if="this.userType ==='Sponsor'" :class="['add-btn', { dark: isDarkTheme }]" @click="showAddCampaignForm = true">+</button>
     <CampaignForm 
       v-if="showAddCampaignForm" 
       :data="data"

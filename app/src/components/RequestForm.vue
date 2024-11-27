@@ -2,70 +2,45 @@
     <div :class="['container popup-container', { 'dark-theme': isDarkTheme }]">
       <form class="p-4 shadow rounded border" action="/" method="post" :class="[ isDarkTheme ? 'detail-form-dark' : 'detail-form-light']" @submit="submitForm">
         <h2 class="text-center mb-4 text-primary" :class="[isDarkTheme ? 'glow-text-dark' : 'glow-text-light']">Add Request</h2>
-        <!-- Common Fields: Name and Email -->
+        <!-- Campaign Select with Search -->
         <div class="mb-3">
-            <label for="name" class="form-label">Name</label>
-            <input type="text" id="name" class="form-control" v-model="name" placeholder="Request Name" @focusout="validateName" @focus="error.name=''"/>
-            <div class="error-text" v-if="error.name">{{ error.name }}</div>
+          <label for="campaign_id" class="form-label">Campaign</label>
+          <select id="campaign_id" class="form-control" v-model="campaign_id" @focus="error.campaign_id=''" @focusout="validateCampaignID">
+            <!-- <option v-for="campaign in campaigns" :key="campaign.id" :value="`${campaign.id},${campaign.sponsor_id}`">{{ campaign.name }}</option> -->
+            <option v-for="campaign in campaigns" :key="campaign.id" :value="`${campaign.id},${campaign.sponsor_id}`">{{ campaign.name }}</option>
+          </select>
+          <div class="error-text" v-if="error.campaign_id">{{ error.campaign_id }}</div>
         </div>
 
-        <div class="mb-3">
-            <label for="description" class="form-label">Description</label>
-            <input type="text" id="description" class="form-control" v-model="description" placeholder="Description..." @focusout="validateDescription" @focus="error.description=''"/>
-            <div class="error-text" v-if="error.description">{{ error.description }}</div>
+        <!-- Influencer Select with Search -->
+        <div v-if="userType !== 'Influencer'" class="mb-3">
+          <label for="influencer_id" class="form-label">Influencer</label>
+          <select id="influencer_id" class="form-control" v-model="influencer_id" @focus="error.influencer_id=''" @focusout="validateInfluencerID">
+            <option v-for="influencer in influencers" :key="influencer.id" :value="influencer.id "> {{ influencer.name }} :({{ influencer.email }})</option>
+          </select>
+          <div class="error-text" v-if="error.influencer_id">{{ error.influencer_id }}</div>
         </div>
         
         <div class="row">
             <div class="col">
                 <div class="mb-3">
-                    <label for="goals" class="form-label">Goal</label>
-                    <input type="number" id="goals" class="form-control" v-model="goals" placeholder="100" @focusout="validateGoal" @focus="error.goals=''"/>
-                    <div class="error-text" v-if="error.goals">{{ error.goals }}</div>
+                    <label for="requirements" class="form-label">Requirements</label>
+                    <input type="text" id="requirements" class="form-control" v-model="requirements" placeholder="Something about the Ad Request" @focusout="validateRequirements" @focus="error.requirements=''"/>
+                    <div class="error-text" v-if="error.requirements">{{ error.requirements }}</div>
                 </div>
             </div>
             <div class="col">
                 <div class="mb-3">
-                    <label for="budget" class="form-label">Budget</label>
-                    <input type="number" id="budget" class="form-control" v-model="budget" placeholder="1000" @focusout="validateBudget" @focus="error.budget=''"/>
-                    <div class="error-text" v-if="error.budget">{{ error.budget }}</div>
+                    <label for="payment_amount" class="form-label">Payment Amount</label>
+                    <input type="number" id="payment_amount" class="form-control" v-model="payment_amount" placeholder="1000" @focusout="validatePayment_amount" @focus="error.payment_amount=''"/>
+                    <div class="error-text" v-if="error.payment_amount">{{ error.payment_amount }}</div>
                 </div>        
             </div>
-            <div class="col">
-                <div class="mb-3">
-                <label for="visibility" class="form-label">Visibility</label>
-                <select id="visibility" class="form-control" v-model="visibility" @change="handleUserTypeChange" @focusout="validateUser">
-                  <option v-for="option in [{ value: 'public', label: 'Public' },{ value: 'private', label: 'Private' }]" 
-                    :key="option.value"
-                    :value="option.value" 
-                    :id="'visibility-'+option.value"
-                    >{{ option.label }}
-                  </option>
-                </select>
-                <div class="error-text" v-if="error.userType">{{ error.userType }}</div>
-              </div>
-            </div>
         </div>
         
-  
         <div class="row">
             <div class="col">
-                <div class="mb-3">
-                    <label for="start-date" class="form-label">Start Date:</label>
-                    <input type="date" id="start-date" class="form-control" v-model="startDate" placeholder="Enter your password" @focusout="validateStartDate" @focus="error.startDate=''"/>
-                    <div class="error-text" v-if="error.startDate">{{ error.startDate }}</div>
-                </div>
-            </div>
-            <div class="col">
-                <div class="mb-3">
-                    <label for="end-date" class="form-label">End Date:</label>
-                    <input type="date" id="end-date" class="form-control" v-model="endDate" placeholder="Enter your password" @focusout="validateEndDate" @focus="error.endDate=''"/>
-                    <div class="error-text" v-if="error.endDate">{{ error.endDate }}</div>
-                </div>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col">
-                <button type="submit" class="btn-primary w-100">Register</button>
+                <button type="submit" class="btn-primary w-100">Request</button>
             </div>
             <div class="col">
                 <button class="btn-cancel w-100" @click="closePopup">Cancel</button>
@@ -84,134 +59,115 @@
       data:{
         type:Object,
         default: null,
+      },
+      campaign:{
+        type:Object,
+        default:null
+      },
+      influencer:{
+        type:Object,
+        default:null
       }
     },
     data() {
       return {
-        name: this.data ? this.data.name : "", 
-        description: this.data ? this.data.description : "", 
-        goals: this.data ? this.data.goals : 0,
-        budget: this.data ? this.data.budget : 0,
+        campaigns:[],
+        influencers:[],
+        to: this.data ? this.data.to : null, 
+        from: this.data ? this.data.from : null, 
+        campaign_id: this.data ? this.data.campaign_id : null,
+        influencer_id: this.data ? this.data.influencer_id : null,
+        requirements: this.data ? this.data.requirements : "",
+        payment_amount: this.data ? this.data.payment_amount : 0,
+        status: this.data ? this.data.status : 'Pending',
+
         // startDate: this.data ? new Date(this.data.startDate).toISOString().split('T')[0] : "", 
         // endDate: this.data ? new Date(this.data.endDate).toISOString().split('T')[0] : "",
-        startDate:"", 
-        endDate:"", 
-        visibility: this.data ? this.data.visibility : "public",
+        
         error:{
-            name: "", 
-            description: "", 
-            goals:"",
-            budget: "",
-            startDate: "", 
-            endDate: "",
-            visibility: ""
+            to: "", 
+            from: "", 
+            campaign_id:"",
+            influencer_id: "",
+            requirements: "", 
+            payment_amount: "",
+            status: ""
         }
       };
+    },
+    mounted() {
+      this.fetchCampaigns();
+      if (this.userType === 'Influencer'){
+        console.log()
+      }
+      else if(this.userType === 'Sponsor')
+      {
+        this.fetchInfluencers();
+      }
+      
+      this.from=this.userID
     },
     methods: {
         resetErrors() {
             this.error = {
-            name: "", 
-            description: "", 
-            goals: "",
-            budget: "",
-            startDate: "", 
-            endDate: "",
-            visibility: ""
-            };
+            to: "", 
+            from: "", 
+            campaign_id:"",
+            influencer_id: "",
+            requirements: "", 
+            payment_amount: "",
+            status: ""
+          };
         },
         closePopup() {
             this.resetErrors();
             this.$emit('close');
         },
-        validateName()
+        validateCampaignID()
         {
-          this.error.name ="";
-          if(this.name === "" || this.name.length < 3)
+          this.error.campaign_id = "";
+          if (!this.campaign_id) {
+            this.error.campaign_id = "Please select a campaign.";
+          }
+          else{
+            const [selectedCampaignID, selectedSponsorID] = this.campaign_id.split(',');
+            if (this.userType === 'Influencer'){
+              this.to=selectedSponsorID;
+            }
+            this.campaign_id=selectedCampaignID;
+          }
+        },
+        validateInfluencerID()
+        {
+          this.error.influencer_id = "";
+          if (!this.influencer_id) {
+            this.error.influencer_id = "Please select an influencer.";
+          }
+          if (this.userType === 'Sponsor'){
+            this.to = this.influencer_id;
+          }
+        },
+        validateRequirements()
+        {
+          
+        },
+        validatePayment_amount()
+        {
+          this.error.payment_amount ="";
+          if(this.payment_amount < 0)
           {
-            this.error.name = "Please Enter a Valid Name!";
+            this.error.payment_amount = "Payment Cannot Be Negative!";
             return false;
           }
           return true;
         },
-        validateDescription()
-        {
-          this.error.description ="";
-          if(this.description === "" || this.description.length < 15)
-          {
-            this.error.description = "Please Enter a Brief Description!";
-            return false;
-          }
-          return true;
-        },
-        validateGoal()
-        {
-          this.error.goals ="";
-          if(this.goals === 0 || this.goals < 0)
-          {
-            this.error.goals = "Goal Should be Greater than 0!";
-            return false;
-          }
-          return true;
-        },
-        validateBudget()
-        {
-          this.error.budget ="";
-          if(this.budget < 0)
-          {
-            this.error.budget = "Budget Cannot Be Negative!";
-            return false;
-          }
-          return true;
-        },
-        validateStartDate()
-        {
-          this.error.startDate = "";
-          const today = new Date().toISOString().split('T')[0];
-          if (this.startDate === "") {
-              this.error.startDate = "Start date cannot be empty!";
-              return false;
-          } else if (this.startDate < today) {
-              this.error.startDate = "Start date cannot be in the past!";
-              return false;
-          }
-          return true;
-        },
-        validateEndDate()
-        {
-          this.error.endDate = "";
-          const today = new Date().toISOString().split('T')[0]; // Get today's date in YYYY-MM-DD format
-          if (this.endDate === "") {
-              this.error.endDate = "End date cannot be empty!";
-              return false;
-          } else if (this.endDate < today) {
-              this.error.endDate = "End date cannot be in the past!";
-              return false;
-          } else if (this.endDate <= this.startDate) {
-              this.error.endDate = "End date must be after start date!";
-              return false;
-          }
-          return true;
-        },
-        validateVisibility()
-        {
-          this.error.visibility="";
-          if(this.visibility !== "public" && this.visibility !== "private")
-          {
-              this.error.visibility = "Invalid Visibility!";
-              return false;
-          }
-          return true;
-        },    
+        
         validateForm()
         {
-          return (this.validateName()
-              && this.validateDescription()
-              && this.validateGoal()
-              && this.validateBudget()
-              && this.validateStartDate()
-              && this.validateEndDate()
-              && this.validateVisibility()
+          return (this.validateCampaignID()
+              && this.validateInfluencerID()
+              && this.validateRequirements()
+              && this.validatePayment_amount()
           );
         },
         async submitForm(event) {
@@ -222,13 +178,13 @@
             console.log("isEdit:",isEdit);
             const url = 'http://127.0.0.1:5000/auth/requests';
             const payload = {
-              name:this.name,
-              description:this.description,
-              budget:this.budget,
-              goals:this.goals,
-              startDate:this.startDate,
-              endDate:this.endDate,
-              visibility:this.visibility
+              to_:this.to,
+              from_:this.from,
+              campaign_id:this.campaign_id,
+              influencer_id:this.influencer_id,
+              requirements:this.requirements,
+              payment_amount:this.payment_amount,
+              status:this.status
             }
             if (isEdit)
             {
@@ -268,12 +224,65 @@
             }
           }
         },
+        async fetchCampaigns() {
+          try {
+            const url = "http://127.0.0.1:5000/auth/campaigns";
+            const headers = {
+              "Content-Type": "application/json",
+              "Authorization":this.token,
+              // "search-query": this.searchQuery,
+            };
+            const response = await fetch(url, {
+              method: "GET",
+              headers: headers,
+            });
+            if (!response.ok) {
+              throw new Error(`API error: ${response.status}`);
+            }
+            const data = await response.json();
+            this.campaigns = data;
+          } catch (error) {
+            console.error("Failed to fetch campaigns:", error);
+          }
+        },
+        async fetchInfluencers() {
+          try {
+            const url = "http://127.0.0.1:5000/auth/users";
+            const headers = {
+              "Content-Type": "application/json",
+              "Authorization": this.token,
+              "search-query": this.searchQuery, // If needed, you can still pass the search query
+            };
+            const params = new URLSearchParams({
+              type: 'Influencer' // This parameter filters the users by type on the server side
+            });
+          
+            const response = await fetch(`${url}?${params.toString()}`, {
+              method: "GET",
+              headers: headers,
+            });
+          
+            if (!response.ok) {
+              throw new Error(`API error: ${response.status}`);
+            }
+          
+            const data = await response.json();
+            this.influencers = data;
+          } catch (error) {
+            console.error("Failed to fetch users:", error);
+          }
+        },
     },
     computed:{
-      ...mapGetters(['isDarkTheme','token'])
+      ...mapGetters(['isDarkTheme','token','userType','userID'])
     },
     watch:{
-      
+      from(v){
+        console.log('From: ',v);
+      },
+      to(v){
+        console.log('To: ',v);
+      },
     }
   };
 </script>

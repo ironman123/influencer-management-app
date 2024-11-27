@@ -25,7 +25,7 @@
         @edit-request="editRequest"
       />
     </div>
-    <button :class="['add-btn', { dark: isDarkTheme }]" @click="showAddRequestForm = true">+</button>
+    <button v-if="this.userType!=='admin'" :class="['add-btn', { dark: isDarkTheme }]" @click="showAddRequestForm = true">+</button>
     <RequestForm 
       v-if="showAddRequestForm" 
       :data="data"

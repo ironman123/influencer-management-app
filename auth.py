@@ -247,19 +247,29 @@ def campaigns(data):
 def users(data):
    email =data.get('email')
    if not email:
-         return jsonify({"meassage": "Unauthorized access"}), 403
+      return jsonify({"meassage": "Unauthorized access"}), 403
    user = User.query.filter_by(email=email).first()
-   if user.user_type != 'admin':
-      return jsonify({"message": "Unauthorized access"}), 403
+   
+   # if user.user_type != 'admin':
+   #    return jsonify({"message": "Unauthorized access"}), 403
    
    if request.method == 'GET':
-      users = User.query.all()
+      user_type = request.args.get('type')
+
+      query = User.query
+
+      if user_type:
+            query = query.filter_by(user_type=user_type)
+
+      users = query.all()
+
       users_data=[
          {
             'id':user.id,
             'name':user.full_name,
             'userType':user.user_type,
-            'flag':user.flag
+            'flag':user.flag,
+            'email':user.email
          }
          for user in users
       ]
@@ -295,14 +305,16 @@ def requests(data):
    
    if request.method == "GET":
       if user_type == "Sponsor":
-         requests = AdRequest.query \
-         .join(Campaign) \
-         .filter(Campaign.sponsor_id == user.sponsor.id) \
-         .all()
+         # requests = AdRequest.query \
+         # .join(Campaign) \
+         # .filter(Campaign.sponsor_id == user.sponsor.id) \
+         # .all()
+         pass
       elif user_type == "Influencer":
-         requests = AdRequest.query \
-         .filter(AdRequest.influencer_id == user.id) \
-         .all()
+         # requests = AdRequest.query \
+         # .filter(AdRequest.influencer_id == user.id) \
+         # .all()
+         pass
       else:
          return jsonify({"message": "User type not recognized!"}), 400
         
