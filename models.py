@@ -65,23 +65,25 @@ class AdRequest(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     campaign_id = db.Column(db.Integer, db.ForeignKey('campaigns.id'), nullable=False)
     influencer_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    to_ = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    from_ = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     requirements = db.Column(db.Text, nullable=False)
     payment_amount = db.Column(db.Float, nullable=False)
     status = db.Column(db.String(20), nullable=False, default="Pending")  # Pending, Accepted, Rejected
     flagged = db.Column(db.Boolean, nullable=False, default=False)
     campaign = db.relationship('Campaign', backref=db.backref('ad_requests',cascade="all, delete"))
-    influencer = db.relationship('User', backref=db.backref('ad_requests',cascade="all, delete"))  # Influencer is a User
+    #influencer = db.relationship('User', backref=db.backref('ad_requests',cascade="all, delete"))  # Influencer is a User
+    sender = db.relationship("User", primaryjoin="User.id==AdRequest.from_")
+    reciever= db.relationship("User", primaryjoin="User.id==AdRequest.to_")
 
 # Messages Table (Optional)
 class Message(db.Model):
     __tablename__ = 'messages'
     id = db.Column(db.Integer, primary_key=True)
     ad_request_id = db.Column(db.Integer, db.ForeignKey('ad_requests.id'), nullable=False)
-    sender_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     message_text = db.Column(db.Text, nullable=False)
     timestamp = db.Column(DateTime(timezone=True), default=datetime.now)
     ad_request = db.relationship('AdRequest', backref=db.backref('messages',cascade="all, delete"))
-    sender = db.relationship('User', backref=db.backref('sent_messages',cascade="all, delete"))
 
 # Function to create admin user
 def create_admin():
@@ -93,7 +95,7 @@ def create_admin():
             full_name="Admin User",
             password=generate_password_hash("admin"),
             user_type="admin",
-            flag='authorized'
+            flag='Authorized'
         )
         db.session.add(admin)
     for platform in ['instagram','facebook','youtube']:

@@ -113,10 +113,10 @@ def campaigns(data):
       email = data.get("email")
       if not email:
          return jsonify({"message": "Unauthorized access"}), 403
-      userType = User.query.filter_by(email=email).first().user_type
+      user = User.query.filter_by(email=email).first()
        
       # Query for public campaigns or private campaigns owned by the user or all if user is admin
-      if userType != "admin":
+      if user.user_type != "admin":
          campaigns = (Campaign.query.join(Sponsor).join(User)).filter(
             or_(Campaign.visibility == "public",
                and_(Campaign.visibility == "private",User.email == email)
@@ -190,36 +190,57 @@ def campaigns(data):
       
    if request.method=='PUT':
       email=data['email']
+      if not email:
+         return jsonify({"message": "Unauthorized access"}), 403
+      user = User.query.filter_by(email=email).first()
+      if not user:
+         return jsonify({"message": "User Not found!"}), 404
       data=request.json
 
       id=data['id']
-      name=data.get('name')
-      description=data.get('description')
-      visibility=data.get('visibility')
-      start_date=datetime.fromisoformat(data.get('startDate'))
-      end_date=datetime.fromisoformat(data.get('endDate'))
-      budget=float(data.get('budget'))
-      goals=int(data.get('goals'))
-
-      sponsor = Sponsor.query.join(User).filter_by(email=email).first()
       campaign = Campaign.query.filter_by(id=id).first()
-      if not sponsor:
-         return jsonify({'message': 'Sponsor not found'}), 404
-      elif sponsor.user.flag == 'Flagged':
-         return jsonify({'message': 'Flagged User Action Not Allowed!'}), 403
-      elif not campaign:
-         return jsonify({'message': 'Campaign not found'}), 404
-      
-      campaign.name=name
-      campaign.description=description
-      campaign.visibility=visibility
-      campaign.start_date=start_date
-      campaign.end_date=end_date
-      campaign.budget=budget
-      campaign.goals=goals
-      db.session.commit()
-      return jsonify({'message': 'Campaign Edited successfully', 'campaign_id': campaign.id}), 201
+      if not campaign:
+            return jsonify({'message': 'Campaign not found'}), 404
 
+      if user.user_type != 'admin':
+         name=data.get('name')
+         description=data.get('description')
+         visibility=data.get('visibility')
+         start_date=datetime.fromisoformat(data.get('startDate'))
+         end_date=datetime.fromisoformat(data.get('endDate'))
+         budget=float(data.get('budget'))
+         goals=int(data.get('goals'))
+
+         sponsor = Sponsor.query.join(User).filter_by(email=email).first()
+         if not sponsor:
+            return jsonify({'message': 'Sponsor not found'}), 404
+         elif sponsor.user.flag == 'Flagged':
+            return jsonify({'message': 'Flagged User Action Not Allowed!'}), 403
+
+         campaign.name=name
+         campaign.description=description
+         campaign.visibility=visibility
+         campaign.start_date=start_date
+         campaign.end_date=end_date
+         campaign.budget=budget
+         campaign.goals=goals
+         db.session.commit()
+         return jsonify({'message': 'Campaign Edited successfully', 'campaign_id': campaign.id}), 201
+      else:
+         flag = data['flag']
+         print(flag,":")
+         if not flag:
+            return jsonify({'message': 'Flag value is required'}), 400
+         if flag == 'Active':
+            campaign.flagged=True
+            flag = 'Flagged'
+         elif flag == 'Flagged':
+            campaign.flagged=False
+            flag = 'Active'
+         elif flag == 'Completed':
+            return jsonify({'message': 'Completed Campaign Cannot Be Flagged!!!', 'flag': flag}),201   
+         db.session.commit()
+         return jsonify({'message': 'Flag updated successfully', 'flag': flag}),201
 
 @auth.route('/users',methods=['GET','PUT'])
 @token_required
@@ -260,36 +281,65 @@ def users(data):
       return jsonify({'message': 'Flag updated successfully', 'flag': user.flag}),201
 
 
+@auth.route('/requests',methods=['GET'])
+@token_required
+def requests(data):
+   email = data['email']
+   if not email:
+      return jsonify({"message": "Unauthorized access!!"}), 403
+   user = User.query.filter_by(email=email).first()
+   if not user:
+        return jsonify({"message": "User not found!"}), 404
+   
+   user_type = user.user_type
+   
+   if request.method == "GET":
+      if user_type == "Sponsor":
+         requests = AdRequest.query \
+         .join(Campaign) \
+         .filter(Campaign.sponsor_id == user.sponsor.id) \
+         .all()
+      elif user_type == "Influencer":
+         requests = AdRequest.query \
+         .filter(AdRequest.influencer_id == user.id) \
+         .all()
+      else:
+         return jsonify({"message": "User type not recognized!"}), 400
+        
+   
+
 
 @auth.route('/temp', methods=['GET'])
 @token_required
 def temp(data):
    if request.method == 'GET':
-      
-      campaign1 = Campaign(
-         name="One Piece",
-         description="Promoting winter-themed products.",
-         start_date=datetime.now(timezone.utc),
-         end_date=datetime.now(timezone.utc) + timedelta(days=30),
-         budget=5000.0,
-         visibility="public",
-         goals=5,
-         flagged=True,
-         sponsor_id=3
-      )
-      campaign2 = Campaign(
-         name="Attak on Titan",
-         description="Massive discounts for summer products.",
-         start_date=datetime.now(timezone.utc) - timedelta(days=60),
-         end_date=datetime.now(timezone.utc) - timedelta(days=30),
-         budget=8000.0,
-         visibility="private",
-         goals=10,
-         sponsor_id=3
-      )
-      db.session.add(campaign1)
-      db.session.add(campaign2)
-      db.session.commit()
+      pass
+      # campaign1 = Campaign(
+      #    name="One Piece",
+      #    description="Promoting winter-themed products.",
+      #    start_date=datetime.now(timezone.utc),
+      #    end_date=datetime.now(timezone.utc) + timedelta(days=30),
+      #    budget=5000.0,
+      #    visibility="public",
+      #    goals=5,
+      #    flagged=True,
+      #    sponsor_id=3
+      # )
+      # campaign2 = Campaign(
+      #    name="Attak on Titan",
+      #    description="Massive discounts for summer products.",
+      #    start_date=datetime.now(timezone.utc) - timedelta(days=60),
+      #    end_date=datetime.now(timezone.utc) - timedelta(days=30),
+      #    budget=8000.0,
+      #    visibility="private",
+      #    goals=10,
+      #    sponsor_id=3
+      # )
+      # db.session.add(campaign1)
+      # db.session.add(campaign2)
+      # db.session.commit()
+
+
       
       
       #with engine.connect() as connection:
