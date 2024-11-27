@@ -219,7 +219,7 @@
           if (this.validateForm()) {
             // handle form submission
             const isEdit = !!this.data; // Determine if it's an edit
-            console.log("isEdit:",isEdit);
+            // console.log("isEdit:",isEdit);
             const url = 'http://127.0.0.1:5000/auth/campaigns';
             const payload = {
               name:this.name,

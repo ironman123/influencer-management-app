@@ -23,6 +23,7 @@
         :userName="userName"
         :userID="userID"
         @edit-campaign="editCampaign"
+        @toggle-flag="toggleFlag"
       />
     </div>
     <button :class="['add-btn', { dark: isDarkTheme }]" @click="showAddCampaignForm = true">+</button>
@@ -101,7 +102,7 @@ export default {
   },
   methods: {
     editCampaign(d){
-      this.showAddCampaignForm = true
+      this.showAddCampaignForm = true;
       this.data=d;
     },
     closePopup(){
@@ -130,6 +131,33 @@ export default {
         this.campaigns = data;
       } catch (error) {
         console.error("Failed to fetch campaigns:", error);
+      }
+    },
+    async toggleFlag(campaign){
+      try{
+        const flag = campaign.status;
+        const response = await fetch('http://127.0.0.1:5000/auth/campaigns', {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": this.token
+                    },
+                    body: JSON.stringify({ id:campaign.id,flag: flag }),
+                });
+                if (!response.ok) {
+                    const error = await response.json();
+                    console.error("Error updating flag:", error.message);
+                    return;
+                }
+                const data = await response.json();
+                
+                // Update the local user flag
+                
+                campaign.status = data.flag;
+      }
+      catch(error)
+      {
+        console.error("Failed to fetch users:", error);
       }
     },
   },

@@ -242,6 +242,8 @@
     margin-top: 0.5rem;
     padding: 0.25rem;
     display: flex;
+    max-width: 81vw;
+    flex-direction: row;
     flex-wrap: wrap;
     overflow-y: auto;
     gap: 0.75rem;

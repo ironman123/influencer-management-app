@@ -96,7 +96,7 @@ import { mapGetters } from 'vuex';
             }
             else if(response.status == 401)
             {
-              const data = response.json();
+              const data = await response.json();
               this.error.email=data['message'];
               this.error.password=data['message'];
             }

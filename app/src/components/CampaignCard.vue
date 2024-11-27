@@ -49,7 +49,7 @@
           Edit
         </button>
         <button
-          v-if="isAdmin"
+          v-if="isAdmin && campaign.status !== 'Completed'"
           class="btn btn-secondary btn-sm"
           @click="toggleFlag"
         >
@@ -110,7 +110,7 @@ export default {
       return this.userType === "admin";
     },
     isInfluencer() {
-      return this.userType === "influencer";
+      return this.userType === "Influencer";
     },
   },
   methods: {
@@ -120,13 +120,9 @@ export default {
     },
     editCampaign() {
       this.$emit('edit-campaign',this.campaign)
-      
     },
-    toggleVisibility() {
-      // Implement visibility toggle logic
-      alert(
-        `Toggling visibility for campaign: ${this.campaign.name}`
-      );
+    toggleFlag() {
+      this.$emit('toggle-flag',this.campaign);
     },
     requestAd() {
       // Implement ad request logic
