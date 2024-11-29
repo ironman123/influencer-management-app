@@ -33,6 +33,11 @@
       :data="data"
       @close="closePopup"
     />
+    <NegotiateForm
+      v-if="showNegotiateForm"
+      :adRequestId="adRequestId"
+      @close="closePopup"
+    />
   </div>
 </template>
 
@@ -40,19 +45,23 @@
 import { mapState, mapGetters } from "vuex";
 import RequestCard from "./RequestCard.vue";
 import RequestForm from "./RequestForm.vue";
+import NegotiateForm from "./Negotiate.vue"
 
 export default {
   name: "RequestPage",
   components: {
     RequestCard,
-    RequestForm
+    RequestForm,
+    NegotiateForm
   },
   data() {
     return {
       data:null,
       activeTab: "All",
       requests: [],
+      adRequestId:null,
       showAddRequestForm: false,
+      showNegotiateForm:false
     };
   },
   computed: {
@@ -100,7 +109,13 @@ export default {
       this.data.selectedCampaign=`${d.campaign_id},${d.sponsor_id}`
       this.showAddRequestForm = true
     },
+    negotiate(request){
+      this.adRequestId = request.id;
+      this.showNegotiateForm=true;
+    },
     closePopup(){
+      this.adRequestId=null;
+      this.showNegotiateForm=false;
       this.showAddRequestForm = false;
       this.data=null;
     },

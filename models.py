@@ -80,10 +80,12 @@ class AdRequest(db.Model):
 class Message(db.Model):
     __tablename__ = 'messages'
     id = db.Column(db.Integer, primary_key=True)
+    sender_id=db.Column(db.Integer,db.ForeignKey('users.id'), nullable=False)
     ad_request_id = db.Column(db.Integer, db.ForeignKey('ad_requests.id'), nullable=False)
     message_text = db.Column(db.Text, nullable=False)
     timestamp = db.Column(DateTime(timezone=True), default=datetime.now)
     ad_request = db.relationship('AdRequest', backref=db.backref('messages',cascade="all, delete"))
+    sender = db.relationship('User', backref=db.backref('sent_messages',cascade="all, delete", lazy=True), foreign_keys=[sender_id])
 
 # Function to create admin user
 def create_admin():

@@ -26,6 +26,7 @@
           :userID="userID"
           @editRequest="editRequest"
           @update-status="updateCardStatus"
+          @negotiate="negotiate"
         />
         <CampaignForm 
           v-if="showAddCampaignForm" 
@@ -37,6 +38,11 @@
           :data="data"
           @close="closePopup"
         />
+        <NegotiateForm
+            v-if="showNegotiateForm"
+            :adRequestId="adRequestId"
+            @close="closePopup"
+        />
       </div>
     </div>
   </template>
@@ -47,6 +53,7 @@
   import RequestCard from "./RequestCard.vue";
   import CampaignForm from "./CampaignForm.vue";
   import RequestForm from "./RequestForm.vue";
+  import NegotiateForm from "./Negotiate.vue"
   
   export default {
     name: "HomePage",
@@ -54,7 +61,8 @@
       CampaignCard,
       RequestCard,
       CampaignForm,
-      RequestForm
+      RequestForm,
+      NegotiateForm
     },
     data() {
       return {
@@ -66,6 +74,8 @@
         latestRequests: [],
         showAddCampaignForm: false,
         showAddRequestForm: false,
+        showNegotiateForm:false,
+        adRequestId:null,
         data: null,
       };
     },
@@ -165,12 +175,17 @@
             selectedCampaign: `${d.id},${d.sponsor_id}`,
             from_: this.userID,
             campaign_id: d.id,
+            requirements:'',
             status: 'Pending',
           };
           // You could trigger the modal to request the ad, for example
           this.showAddRequestForm = true;
         },
-  
+        negotiate(request)
+        {
+            this.adRequestId = request.id;
+            this.showNegotiateForm=true;
+        },
       // Handle editing a request
         editRequest(d) {
           this.data = { ...d }; // Copy the original data to avoid mutation
@@ -178,6 +193,8 @@
           this.showAddRequestForm = true;
         },
         closePopup(){
+            this.adRequestId=null;
+            this.showNegotiateForm=false;
             this.showAddRequestForm = false;
             this.showAddCampaignForm = false;
             this.data=null;

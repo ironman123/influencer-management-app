@@ -200,6 +200,7 @@
             const method = isEdit ? "PUT" : "POST";
             console.log(payload)
             try{
+              
                 console.log("Adding Request: ",payload)
                 const response = await fetch(url,{
                     method:method,
@@ -298,20 +299,20 @@
 </script>
   
 <style scoped>
-    .popup-container {
-        width: auto;
-        height: auto;
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-30%, -53%);
-        background: rgba(0, 0, 0, 0.5);
-        border-radius: 2%;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        z-index: 1000;
-    }
+  .popup-container {
+      width: auto;
+      height: auto;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-30%, -53%);
+      background: rgba(0, 0, 0, 0.5);
+      border-radius: 2%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+  }
   /* General layout */
   .container {
     width: 100%;

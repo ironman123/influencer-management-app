@@ -361,6 +361,7 @@ def requests(data):
    
    elif request.method== "POST":
       data = request.json
+      print(data)
       to_=data['to_']
       from_=data['from_']
       campaign_id=data['campaign_id']
@@ -369,8 +370,7 @@ def requests(data):
       payment_amount=data['payment_amount']
       status=data['status']
       
-
-      if from_ != user.id:
+      if int(from_) != user.id:
          return jsonify({'message': 'Campaign Does not belong to Sponsor'}), 403
 
       campaign = Campaign.query.filter_by(id=campaign_id).first()
@@ -445,7 +445,75 @@ def requests(data):
             return jsonify({'message': 'Invalid status transition for Influencer'}), 400
 
       
+@auth.route('/messages',methods=['GET','POST'])
+@token_required
+def messages(data):
+   
+   email= data['email']
+   if not email:
+      return jsonify({"message": "Unauthorized access"}), 403
+   
+   user = User.query.filter_by(email=email).first()
+   if not user:
+        return jsonify({"message": "User not found!"}), 404
+
+   if request.method == 'GET':
+      ad_request_id = request.args.get('ad_request_id')
+      if not ad_request_id:
+         return jsonify({"message": "Missing Ad Request ID"}), 404
+        # Fetch all messages for the specific ad_request_id
+      messages = Message.query.filter_by(ad_request_id=ad_request_id).all()
         
+        # If no messages are found
+      if not messages:
+         return jsonify({"message": "No messages found for this Ad Request ID"}), 404
+      
+      result = []
+      for message in messages:
+         result.append({
+            'id': message.id,
+            'sender_name': message.sender.full_name,  # Assuming 'sender' is a relationship in the Message model
+            'message_text': message.message_text,
+            'timestamp': message.timestamp.isoformat(),  # Return timestamp in ISO format
+         })
+
+      return jsonify(result), 200
+   
+   elif request.method == 'POST':
+        # Handle the POST request for creating a new message
+      message_text = request.json.get('message_text')
+      ad_request_id = request.json.get('ad_request_id')
+        
+      if not message_text:
+         return jsonify({"message": "Message text is required"}), 400
+        
+        # Create a new message object and associate it with the user
+      new_message = Message(
+         ad_request_id=ad_request_id,
+         message_text=message_text,
+         sender_id=user.id  # sender_id is the user's ID
+      )
+        
+      try:
+         # Add and commit the new message to the database
+         db.session.add(new_message)
+         db.session.commit()
+
+         return jsonify({"message": "Message sent successfully!"}), 201
+      
+      except Exception as e:
+         db.session.rollback()
+         return jsonify({"message": f"An error occurred while sending the message: {str(e)}"}), 500
+
+   
+   # if request.method == 'GET':
+   #    messages = Message.query.filter_by(ad_request_id=ad_request_id).all()
+
+   #    if not messages:
+   #          return jsonify({"message": "No messages found for this Ad Request ID"}), 404
+      
+   return
+
    
 
 
@@ -463,7 +531,7 @@ def temp():
           visibility="public",
           goals=5,
           flagged=True,
-          sponsor_id=3
+          sponsor_id=2
        )
        campaign2 = Campaign(
           name="BMW 7 Series",
@@ -473,7 +541,7 @@ def temp():
           budget=8000.0,
           visibility="private",
           goals=10,
-          sponsor_id=3
+          sponsor_id=2
        )
        db.session.add(campaign1)
        db.session.add(campaign2)

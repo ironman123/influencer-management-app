@@ -120,6 +120,7 @@ export default {
         selectedCampaign:`${d.id},${d.sponsor_id}`,
         from_:this.userID,
         campaign_id:d.id,
+        requirements:'',
         status:'Pending'
       }
       this.showAddRequestForm = true;
