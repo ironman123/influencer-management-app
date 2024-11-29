@@ -5,7 +5,7 @@
         <!-- Campaign Select with Search -->
         <div class="mb-3">
           <label for="campaign_id" class="form-label">Campaign</label>
-          <select id="campaign_id" class="form-control" v-model="campaign_id" @focus="error.campaign_id=''" @focusout="validateCampaignID">
+          <select id="campaign_id" class="form-control" v-model="selectedCampaign" @focus="error.campaign_id=''" @focusout="validateCampaignID">
             <!-- <option v-for="campaign in campaigns" :key="campaign.id" :value="`${campaign.id},${campaign.sponsor_id}`">{{ campaign.name }}</option> -->
             <option v-for="campaign in campaigns" :key="campaign.id" :value="`${campaign.id},${campaign.sponsor_id}`">{{ campaign.name }}</option>
           </select>
@@ -22,7 +22,7 @@
         </div>
         
         <div class="row">
-            <div class="col">
+            <div class="col" v-if="this.userType === 'Sponsor' ">
                 <div class="mb-3">
                     <label for="requirements" class="form-label">Requirements</label>
                     <input type="text" id="requirements" class="form-control" v-model="requirements" placeholder="Something about the Ad Request" @focusout="validateRequirements" @focus="error.requirements=''"/>
@@ -71,6 +71,7 @@
     },
     data() {
       return {
+        selectedCampaign:this.data ? this.data.selectedCampaign:null,
         campaigns:[],
         influencers:[],
         to: this.data ? this.data.to : null, 
@@ -97,12 +98,12 @@
     },
     mounted() {
       this.fetchCampaigns();
-      if (this.userType === 'Influencer'){
-        console.log()
-      }
-      else if(this.userType === 'Sponsor')
-      {
+      if (this.userType === 'Sponsor'){
         this.fetchInfluencers();
+      }
+      else if(this.userType === 'Influencer')
+      {
+        this.influencer_id=this.userID
       }
       
       this.from=this.userID
@@ -126,30 +127,35 @@
         validateCampaignID()
         {
           this.error.campaign_id = "";
-          if (!this.campaign_id) {
+          if (!this.selectedCampaign) {
             this.error.campaign_id = "Please select a campaign.";
+            return false;
           }
           else{
-            const [selectedCampaignID, selectedSponsorID] = this.campaign_id.split(',');
+            const [selectedCampaignID, selectedSponsorID] = this.selectedCampaign.split(',');
             if (this.userType === 'Influencer'){
               this.to=selectedSponsorID;
             }
             this.campaign_id=selectedCampaignID;
           }
+          return true;
         },
         validateInfluencerID()
         {
           this.error.influencer_id = "";
           if (!this.influencer_id) {
             this.error.influencer_id = "Please select an influencer.";
+            return false;
           }
           if (this.userType === 'Sponsor'){
             this.to = this.influencer_id;
           }
+          return true;
         },
         validateRequirements()
         {
-          
+          console.log("Requirements: ", this.requirements);
+          return true;
         },
         validatePayment_amount()
         {
@@ -209,17 +215,17 @@
                 else if(response.status == 400)
                 {
                     const data = await response.json();
-                    this.error.name=data['message']
+                    this.error.campaign_id=data['message']
                 }
                 else if(response.status == 403)
                 {
                   const data = await response.json();
-                  this.error.name=data['message']
+                  this.error.campaign_id=data['message']
                 }
             }
             catch(error)
             {
-                this.error.name = "Network Error! Please try again.";
+                this.error.campaign_id = "Network Error! Please try again.";
                 // this.error.password = "Network Error! Please try again.";
             }
           }
@@ -232,7 +238,10 @@
               "Authorization":this.token,
               // "search-query": this.searchQuery,
             };
-            const response = await fetch(url, {
+            const params = new URLSearchParams({
+              owner: this.userID // This parameter filters the users by type on the server side
+            });
+            const response = await fetch(`${url}?${params.toString()}`, {
               method: "GET",
               headers: headers,
             });
@@ -400,6 +409,7 @@
   /* Input and button styling */
   .form-control {
     width: 100%;
+    min-width: 24rem;
     padding: 10px;
     border-radius: 5px;
     border: 1px solid #ddd;

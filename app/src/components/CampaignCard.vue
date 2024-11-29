@@ -43,7 +43,7 @@
         <!-- <button class="btn btn-primary btn-sm" @click="viewCampaign">View</button> -->
         <button
           v-if="isSponsor && campaign.status !== 'Completed'"
-          class="btn btn-warning btn-sm"
+          class="btn btn-info btn-sm"
           @click="editCampaign"
         >
           Edit
@@ -57,7 +57,7 @@
         </button>
         <button
           v-if="(isInfluencer || isSponsor) && (campaign.status !== 'Flagged' && campaign.status !== 'Completed')"
-          class="btn btn-info btn-sm"
+          class="btn btn-warning btn-sm"
           @click="requestAd"
         >
           Ad Request
@@ -104,6 +104,7 @@ export default {
   computed: {
     ...mapGetters(['isDarkTheme']),
     isSponsor() {
+      console.log(this.userID)
       return this.campaign.sponsor_id === Number(this.userID);
     },
     isAdmin() {

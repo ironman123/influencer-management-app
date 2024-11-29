@@ -23,6 +23,8 @@
         :userName="userName"
         :userID="userID"
         @edit-request="editRequest"
+        @update-status="updateCardStatus"
+        @negotiate="negotiate"
       />
     </div>
     <button v-if="this.userType!=='admin'" :class="['add-btn', { dark: isDarkTheme }]" @click="showAddRequestForm = true">+</button>
@@ -57,21 +59,24 @@ export default {
     ...mapState(["userType", "user", "userName", "userID", "searchQuery"]),
     ...mapGetters(["isDarkTheme","token"]),
     tabs() {
-      const baseTabs = ["All", "Active", "Pending", "Completed"];
+      const baseTabs = ["All", "Accepted", "Pending", "Completed","Rejected"];
       return baseTabs;
     },
     filteredRequests() {
       let filtered = this.requests;
 
       // Filter by tab
-      if (this.activeTab === "Active") {
-        filtered = filtered.filter((c) => c.status === "Active");
+      if (this.activeTab === "Accepted") {
+        filtered = filtered.filter((c) => c.status === "Accepted");
       }
       else if (this.activeTab === "Pending") {
         filtered = filtered.filter((c) => c.status === "Pending");
       }
       else if (this.activeTab === "Completed") {
         filtered = filtered.filter((c) => c.status === "Completed");
+      }
+      else if (this.activeTab === "Rejected") {
+        filtered = filtered.filter((c) => c.status === "Rejected");
       }
       
 
@@ -121,6 +126,32 @@ export default {
         console.error("Failed to fetch requests:", error);
       }
     },
+    async updateCardStatus(request,status)
+    {
+      try{
+        const response = await fetch('http://127.0.0.1:5000/auth/requests',{
+        method:"PUT",
+        headers:{
+          "Content-Type": "application/json",
+          "Authorization": this.token
+        },
+        body:JSON.stringify({id:request.id,status:status})
+        })  
+        if(!response.ok)
+        {
+          const error = await response.json();
+          console.error("Error Updating status",error.message);
+          return;
+        }
+        const data = await response.json();
+        request.status = data.status;
+      }
+      catch(error)
+      {
+        console.error("Failed to fetch users:", error);
+      }
+      
+    }
   },
 };
 </script>

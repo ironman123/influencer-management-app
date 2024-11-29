@@ -2,19 +2,20 @@
   <div :class="['request-card card mb-3', { dark: isDarkTheme }]">
     <div :class="['card-header d-flex justify-content-between align-items-center', { dark: isDarkTheme }]">
     <!-- Card Title aligned to the start -->
-    <h5 class="card-title mb-0">{{ request.name }}</h5>
+    <h5 class="card-title mb-0">{{ request.campaignName }}</h5>
     
     <!-- Visibility Badge aligned to the end -->
       <div>
-        <span style="margin-right: 0.5rem;" :class="['badge', { 'bg-success': request.visibility === 'public', 'bg-secondary': request.visibility !== 'public' }, { dark: isDarkTheme }]">
-          {{ request.visibility }}
-        </span>
+        <!-- <span style="margin-right: 0.5rem;" :class="['badge', { 'bg-success': request.visibility === 'public', 'bg-secondary': request.visibility !== 'public' }, { dark: isDarkTheme }]">
+          {{ request.status }}
+        </span> -->
 
         <!-- Status Badge aligned to the end with color changes based on the status -->
         <span :class="[
               'badge',
-              { 'bg-danger': request.status === 'Flagged', 
-                'bg-warning': request.status === 'Active', 
+              { 'bg-info': request.status === 'Pending', 
+                'bg-warning': request.status === 'Accepted', 
+                'bg-danger': request.status === 'Rejected', 
                 'bg-success': request.status === 'Completed' },
               { dark: isDarkTheme }
             ]"
@@ -24,43 +25,58 @@
       </div>
     </div>
     <div :class="['card-body', { dark: isDarkTheme }]">
-      <p class="card-text"><strong>Sponsor:</strong> {{ request.owner }}</p>
-      <strong>Description:</strong>
-      <p class="card-text"> {{ request.description }}</p>
+      <p class="card-text"><strong>Sponsor:</strong> {{ request.sponsor }}</p>
+      <strong>Requirements:</strong>
+      <p class="card-text"> {{ request.requirements }}</p>
       <div class="row" style="width: 100%;">
         <div class="col">
-          <p class="card-text"><strong>Goals:</strong> {{ request.goals }}</p>
+          <p class="card-text"><strong>From:</strong> {{ request.fromUser }}</p>
         </div>
         <div class="col">
-          <p class="card-text"><strong>Budget:</strong> ${{ request.budget }}</p>
+          <p class="card-text"><strong>To:</strong> {{ request.toUser }}</p>
+        </div>
+        <div class="col">
+          <p class="card-text"><strong>Amount:</strong> {{ request.paymentAmount }}</p>
         </div>
       </div>
-      
-      
     </div>
     <div :class="['card-footer d-flex justify-content-between align-items-center', { dark: isDarkTheme }]">
       <div>
         <!-- <button class="btn btn-primary btn-sm" @click="viewRequest">View</button> -->
         <button
-          v-if="isSponsor && request.status !== 'Completed'"
-          class="btn btn-warning btn-sm"
+          v-if="isSponsor && request.status === 'Pending'"
+          class="btn btn-info btn-sm"
           @click="editRequest"
         >
           Edit
         </button>
         <button
-          v-if="isAdmin"
-          class="btn btn-secondary btn-sm"
-          @click="toggleFlag"
+          v-if="request.status === 'Pending' && (isSponsor || isInfluencer)"
+          class="btn btn-primary btn-sm"
+          @click="negotiate"
         >
-          Toggle Flag
+          Negotiate
         </button>
         <button
-          v-if="(isInfluencer || isSponsor) && (request.status !== 'Flagged' && request.status !== 'Completed')"
+          v-if="isSponsor && request.status === 'Accepted'"
           class="btn btn-info btn-sm"
-          @click="requestAd"
+          @click="updateStatus('Completed')"
         >
-          Ad Request
+          Complete
+        </button>
+        <button
+          v-if="isInfluencer && request.status === 'Pending'"
+          class="btn btn-success btn-sm"
+          @click="updateStatus('Accepted')"
+        >
+          Accept Request
+        </button>
+        <button
+          v-if="isInfluencer && request.status === 'Pending'"
+          class="btn btn-danger btn-sm"
+          @click="updateStatus('Rejected')"
+        >
+          Reject Request
         </button>
       </div>
       <div class="row" style="width: 60%;">
@@ -80,6 +96,7 @@
 </template>
 
 <script>
+// import { reject } from 'core-js/fn/promise';
 import { mapGetters } from 'vuex';
 export default {
   name: "RequestCard",
@@ -104,34 +121,36 @@ export default {
   computed: {
     ...mapGetters(['isDarkTheme']),
     isSponsor() {
-      return this.request.sponsor_id === Number(this.userID);
+      return this.request.sponsor_id === Number(this.userID)&& this.userType == 'Sponsor';
+    },
+    isInfluencer() {
+      return this.request.influencer_id === Number(this.userID) && this.userType == 'Influencer';
     },
     isAdmin() {
       return this.userType === "admin";
     },
-    isInfluencer() {
-      return this.userType === "influencer";
-    },
+    // isInfluencer() {
+    //   return this.userType === "influencer";
+    // },
   },
   methods: {
     formatDate(date) {
       const options = { year: "numeric", month: "long", day: "numeric" };
       return new Date(date).toLocaleDateString(undefined, options);
     },
-    editRequest() {
+    editRequest() 
+    {
       this.$emit('edit-request',this.request)
-      
     },
-    toggleVisibility() {
-      // Implement visibility toggle logic
-      alert(
-        `Toggling visibility for request: ${this.request.name}`
-      );
+    updateStatus(status)
+    {
+      console.log('Emitting: ',status)
+      this.$emit('update-status',this.request,status)
     },
-    requestAd() {
-      // Implement ad request logic
-      alert(`Requesting ad for request: ${this.request.name}`);
-    },
+    negotiate()
+    {
+      this.$emit('negotiate',this.request)
+    }
   },
 };
 </script>

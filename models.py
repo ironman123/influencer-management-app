@@ -69,7 +69,7 @@ class AdRequest(db.Model):
     from_ = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     requirements = db.Column(db.Text, nullable=False)
     payment_amount = db.Column(db.Float, nullable=False)
-    status = db.Column(db.String(20), nullable=False, default="Pending")  # Pending, Accepted, Rejected
+    status = db.Column(db.String(20), nullable=False, default="Pending")  # Pending, Accepted, Rejected, Completed
     flagged = db.Column(db.Boolean, nullable=False, default=False)
     campaign = db.relationship('Campaign', backref=db.backref('ad_requests',cascade="all, delete"))
     #influencer = db.relationship('User', backref=db.backref('ad_requests',cascade="all, delete"))  # Influencer is a User

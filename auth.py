@@ -111,6 +111,7 @@ def campaigns(data):
       #print("Data: ",data)
       
       email = data.get("email")
+      owner = request.args.get('owner')
       if not email:
          return jsonify({"message": "Unauthorized access"}), 403
       user = User.query.filter_by(email=email).first()
@@ -122,6 +123,17 @@ def campaigns(data):
                and_(Campaign.visibility == "private",User.email == email)
                )
             ).all()
+         
+         if owner:
+            print(owner)
+            campaigns = (Campaign.query.join(Sponsor).join(User)).filter(
+               and_(
+                  User.email == email,
+                  Campaign.sponsor_id==owner,
+                  Campaign.flagged==0,
+                  Campaign.end_date > datetime.now(timezone.utc))
+            ).all()
+
       else:
          campaigns = Campaign.query.all()
 
@@ -215,7 +227,7 @@ def campaigns(data):
          if not sponsor:
             return jsonify({'message': 'Sponsor not found'}), 404
          elif sponsor.user.flag == 'Flagged':
-            return jsonify({'message': 'Flagged User Action Not Allowed!'}), 403
+            return jsonify({'message': 'Flagged User, Action Not Allowed!'}), 403
 
          campaign.name=name
          campaign.description=description
@@ -291,7 +303,7 @@ def users(data):
       return jsonify({'message': 'Flag updated successfully', 'flag': user.flag}),201
 
 
-@auth.route('/requests',methods=['GET'])
+@auth.route('/requests',methods=['GET','PUT','POST'])
 @token_required
 def requests(data):
    email = data['email']
@@ -300,68 +312,167 @@ def requests(data):
    user = User.query.filter_by(email=email).first()
    if not user:
         return jsonify({"message": "User not found!"}), 404
+   elif user.flag == 'Flagged':
+         return jsonify({'message': 'Flagged User, Action Not Allowed!'}), 403
    
    user_type = user.user_type
    
    if request.method == "GET":
       if user_type == "Sponsor":
-         # requests = AdRequest.query \
-         # .join(Campaign) \
-         # .filter(Campaign.sponsor_id == user.sponsor.id) \
-         # .all()
-         pass
+         requests = AdRequest.query \
+         .join(Campaign) \
+         .filter_by(sponsor_id = user.id) \
+         .all()
+         
       elif user_type == "Influencer":
-         # requests = AdRequest.query \
-         # .filter(AdRequest.influencer_id == user.id) \
-         # .all()
-         pass
+         requests = AdRequest.query \
+         .filter_by(influencer_id = user.id) \
+         .all()
       else:
          return jsonify({"message": "User type not recognized!"}), 400
+      
+      request_data = [
+         {
+            'id':req.id,
+            'campaignName':req.campaign.name,
+            'sponsor':req.campaign.sponsor.user.full_name,
+            'sponsor_id':req.campaign.sponsor_id,
+            'influencer_id':req.influencer_id,
+            'requirements':req.requirements,
+            'paymentAmount':req.payment_amount,
+            'status':req.status,
+            'to_':req.to_,
+            'from_':req.from_,
+            'toUser':req.reciever.full_name,
+            'fromUser':req.sender.full_name,
+            'start_date':req.campaign.start_date,
+            'end_date':req.campaign.end_date
+         }
+         for req in requests
+      ]
+
+      return jsonify(request_data),201
+      
+   
+   elif request.method== "POST":
+      data = request.json
+      to_=data['to_']
+      from_=data['from_']
+      campaign_id=data['campaign_id']
+      influencer_id=data['influencer_id']
+      requirements=data['requirements']
+      payment_amount=data['payment_amount']
+      status=data['status']
+
+      if from_ != user.id:
+         return jsonify({'message': 'Campaign Does not belong to Sponsor'}), 403
+
+      campaign = Campaign.query.filter_by(id=campaign_id).first()
+      if not campaign:
+         return jsonify({'message': 'Campaign not found'}), 404
+      elif campaign.flagged:
+         return jsonify({'message': 'Flagged Campaign, Action Not Allowed!'}), 403
+   
+      new_request = AdRequest(
+         to_=to_,
+         from_=from_,
+         campaign_id=campaign_id,
+         influencer_id=influencer_id,
+         requirements=requirements,
+         payment_amount=payment_amount,
+         status=status
+      )
+      try:  
+         db.session.add(new_request)
+         db.session.commit()
+         return jsonify({'message': 'Request created successfully', 'request_id': new_request.id}), 201
+      except Exception as e:
+         db.session.rollback()
+         return jsonify({'message': 'Failed to create Ad Request', 'error': str(e)}), 500
+      
+   elif request.method=='PUT':
+      email=data['email']
+      if not email:
+         return jsonify({"message": "Unauthorized access"}), 403
+      user = User.query.filter_by(email=email).first()
+      if not user:
+         return jsonify({"message": "User Not found!"}), 404
+      data=request.json
+
+      request_id = data['id']
+      req = AdRequest.query.filter_by(id=request_id).first()
+      if not req:
+         return jsonify({'message': 'Ad Request not found'}), 404
+      
+      status = data['status']
+      if user.user_type == 'Sponsor':
+         # if not status:
+         #    return jsonify({'message': 'Status value is required'}), 400
+         if status and req.status == 'Accepted' and status == 'Completed':
+            req.status = status
+            try:
+               db.session.commit()
+               return jsonify({'message': 'Request updated successfully','status':status}), 200
+            except Exception as e:
+               db.session.rollback()
+               return jsonify({'message': 'Failed to update request', 'error': str(e)}), 500
+         
+         req.requirements = data['requirements']
+         req.payment_amount = data['payment_amount']
+         try:
+            db.session.commit()
+            return jsonify({'message': 'Request updated successfully'}), 200
+         except Exception as e:
+            db.session.rollback()
+            return jsonify({'message': 'Failed to update request', 'error': str(e)}), 500
+         
+      elif user.user_type == 'Influencer':
+         if status and req.status == 'Pending' and status in ['Accepted', 'Rejected']:
+            req.status = status
+            try:
+               db.session.commit()
+               return jsonify({'message': 'Request updated successfully','status':status}), 200
+            except Exception as e:
+               db.session.rollback()
+               return jsonify({'message': 'Failed to update request', 'error': str(e)}), 500
+         else:
+            return jsonify({'message': 'Invalid status transition for Influencer'}), 400
+
+      
         
    
 
 
 @auth.route('/temp', methods=['GET'])
-@token_required
-def temp(data):
+#@token_required
+def temp():
    if request.method == 'GET':
-      pass
-      # campaign1 = Campaign(
-      #    name="One Piece",
-      #    description="Promoting winter-themed products.",
-      #    start_date=datetime.now(timezone.utc),
-      #    end_date=datetime.now(timezone.utc) + timedelta(days=30),
-      #    budget=5000.0,
-      #    visibility="public",
-      #    goals=5,
-      #    flagged=True,
-      #    sponsor_id=3
-      # )
-      # campaign2 = Campaign(
-      #    name="Attak on Titan",
-      #    description="Massive discounts for summer products.",
-      #    start_date=datetime.now(timezone.utc) - timedelta(days=60),
-      #    end_date=datetime.now(timezone.utc) - timedelta(days=30),
-      #    budget=8000.0,
-      #    visibility="private",
-      #    goals=10,
-      #    sponsor_id=3
-      # )
-      # db.session.add(campaign1)
-      # db.session.add(campaign2)
-      # db.session.commit()
-
-
+      #pass
+       campaign1 = Campaign(
+          name="S25 Ultra",
+          description="Promoting winter-themed products.",
+          start_date=datetime.now(timezone.utc),
+          end_date=datetime.now(timezone.utc) + timedelta(days=30),
+          budget=5000.0,
+          visibility="public",
+          goals=5,
+          flagged=True,
+          sponsor_id=3
+       )
+       campaign2 = Campaign(
+          name="BMW 7 Series",
+          description="Massive discounts for summer products.",
+          start_date=datetime.now(timezone.utc) - timedelta(days=60),
+          end_date=datetime.now(timezone.utc) - timedelta(days=30),
+          budget=8000.0,
+          visibility="private",
+          goals=10,
+          sponsor_id=3
+       )
+       db.session.add(campaign1)
+       db.session.add(campaign2)
+       db.session.commit()
       
-      
-      #with engine.connect() as connection:
-      ## Add the 'flag' column to the User table
-      #   add_column_query = """
-      #   ALTER TABLE users
-      #   ADD COLUMN flag VARCHAR(20) NOT NULL DEFAULT 'authorized';
-      #   """
-      #   connection.execute(text(add_column_query))
-      #   print("Column 'flag' added to User table successfully.")
    return jsonify({'message': 'Entries Added successfully'}), 201 
 
 
