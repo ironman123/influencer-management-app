@@ -95,13 +95,9 @@ export default {
   },
   methods: {
     editRequest(d){
-      console.log("START:")
-      console.log(this.data)
       this.data=d;
       this.data.id =d.id
       this.data.selectedCampaign=`${d.campaign_id},${d.sponsor_id}`
-      console.log(this.data)
-      console.log("END:")
       this.showAddRequestForm = true
     },
     closePopup(){

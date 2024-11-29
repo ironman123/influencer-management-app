@@ -144,7 +144,7 @@ export default {
     },
     updateStatus(status)
     {
-      console.log('Emitting: ',status)
+      //console.log('Emitting: ',status)
       this.$emit('update-status',this.request,status)
     },
     negotiate()

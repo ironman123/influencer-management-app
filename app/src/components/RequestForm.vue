@@ -240,7 +240,7 @@
               // "search-query": this.searchQuery,
             };
             const params = new URLSearchParams({
-              owner: this.userID // This parameter filters the users by type on the server side
+              owner: this.userType == 'Sponsor'?this.userID:null // This parameter filters the users by type on the server side
             });
             const response = await fetch(`${url}?${params.toString()}`, {
               method: "GET",

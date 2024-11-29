@@ -115,22 +115,27 @@ def campaigns(data):
          return jsonify({"message": "Unauthorized access"}), 403
       user = User.query.filter_by(email=email).first()
        
-      # Query for public campaigns or private campaigns owned by the user or all if user is admin
-      if user.user_type != "admin":
+      # Query for all public campaigns or private campaigns owned by the user or all if user is admin
+      if user.user_type == "Influencer":
          campaigns = (Campaign.query.join(Sponsor).join(User)).filter(
             or_(Campaign.visibility == "public",
                and_(Campaign.visibility == "private",User.email == email)
                )
             ).all()
-         
+      elif user.user_type == "Sponsor":
          if owner:
-            print(owner)
             campaigns = (Campaign.query.join(Sponsor).join(User)).filter(
                and_(
                   User.email == email,
                   Campaign.sponsor_id==owner,
                   Campaign.flagged==0,
                   Campaign.end_date > datetime.now(timezone.utc))
+            ).all()
+         else:
+            campaigns = (Campaign.query.join(Sponsor).join(User)).filter(
+            or_(Campaign.visibility == "public",
+               and_(Campaign.visibility == "private",User.email == email)
+               )
             ).all()
 
       else:
