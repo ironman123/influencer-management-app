@@ -24,11 +24,17 @@
         :userID="userID"
         @edit-campaign="editCampaign"
         @toggle-flag="toggleFlag"
+        @request-ad="requestAd"
       />
     </div>
     <button v-if="this.userType ==='Sponsor'" :class="['add-btn', { dark: isDarkTheme }]" @click="showAddCampaignForm = true">+</button>
     <CampaignForm 
       v-if="showAddCampaignForm" 
+      :data="data"
+      @close="closePopup"
+    />
+    <RequestForm
+      v-if="showAddRequestForm"
       :data="data"
       @close="closePopup"
     />
@@ -39,12 +45,14 @@
 import { mapState, mapGetters } from "vuex";
 import CampaignCard from "./CampaignCard.vue";
 import CampaignForm from "./CampaignForm.vue";
+import RequestForm from "./RequestForm.vue";
 
 export default {
   name: "CampaignPage",
   components: {
     CampaignCard,
-    CampaignForm
+    CampaignForm,
+    RequestForm
   },
   data() {
     return {
@@ -52,6 +60,7 @@ export default {
       activeTab: "All",
       campaigns: [],
       showAddCampaignForm: false,
+      showAddRequestForm: false,
     };
   },
   computed: {
@@ -105,7 +114,18 @@ export default {
       this.showAddCampaignForm = true;
       this.data=d;
     },
+    requestAd(d)
+    {
+      this.data = {
+        selectedCampaign:`${d.id},${d.sponsor_id}`,
+        from_:this.userID,
+        campaign_id:d.id,
+        status:'Pending'
+      }
+      this.showAddRequestForm = true;
+    },
     closePopup(){
+      this.showAddRequestForm = false;
       this.showAddCampaignForm = false;
       this.data=null;
     },

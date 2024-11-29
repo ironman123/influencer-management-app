@@ -127,7 +127,7 @@ export default {
     },
     requestAd() {
       // Implement ad request logic
-      alert(`Requesting ad for campaign: ${this.campaign.name}`);
+      this.$emit('request-ad',this.campaign)
     },
   },
 };

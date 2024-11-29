@@ -1,7 +1,7 @@
 <template>
     <div :class="['container popup-container', { 'dark-theme': isDarkTheme }]">
       <form class="p-4 shadow rounded border" action="/" method="post" :class="[ isDarkTheme ? 'detail-form-dark' : 'detail-form-light']" @submit="submitForm">
-        <h2 class="text-center mb-4 text-primary" :class="[isDarkTheme ? 'glow-text-dark' : 'glow-text-light']">Add Request</h2>
+        <h2 class="text-center mb-4 text-primary" :class="[isDarkTheme ? 'glow-text-dark' : 'glow-text-light']">Ad Request</h2>
         <!-- Campaign Select with Search -->
         <div class="mb-3">
           <label for="campaign_id" class="form-label">Campaign</label>
@@ -71,7 +71,7 @@
     },
     data() {
       return {
-        selectedCampaign:this.data ? this.data.selectedCampaign:null,
+        selectedCampaign:this.data ? this.data.selectedCampaign : null,
         campaigns:[],
         influencers:[],
         to: this.data ? this.data.to : null, 
@@ -97,6 +97,7 @@
       };
     },
     mounted() {
+      console.log(this.data)
       this.fetchCampaigns();
       if (this.userType === 'Sponsor'){
         this.fetchInfluencers();
@@ -180,7 +181,7 @@
           event.preventDefault();
           if (this.validateForm()) {
             // handle form submission
-            const isEdit = !!this.data; // Determine if it's an edit
+            const isEdit = !!this.data.id; // Determine if it's an edit
             console.log("isEdit:",isEdit);
             const url = 'http://127.0.0.1:5000/auth/requests';
             const payload = {

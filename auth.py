@@ -7,7 +7,6 @@ from sqlalchemy import or_,create_engine, text
 
 
 auth = Blueprint('auth', __name__)
-engine = create_engine("sqlite:///app.db")
 
 @auth.route('/signin', methods=['POST'])
 def login():
@@ -336,6 +335,7 @@ def requests(data):
             'id':req.id,
             'campaignName':req.campaign.name,
             'sponsor':req.campaign.sponsor.user.full_name,
+            'campaign_id':req.campaign.id,
             'sponsor_id':req.campaign.sponsor_id,
             'influencer_id':req.influencer_id,
             'requirements':req.requirements,
@@ -363,6 +363,7 @@ def requests(data):
       requirements=data['requirements']
       payment_amount=data['payment_amount']
       status=data['status']
+      
 
       if from_ != user.id:
          return jsonify({'message': 'Campaign Does not belong to Sponsor'}), 403
@@ -398,7 +399,7 @@ def requests(data):
       if not user:
          return jsonify({"message": "User Not found!"}), 404
       data=request.json
-
+      print(data)
       request_id = data['id']
       req = AdRequest.query.filter_by(id=request_id).first()
       if not req:
