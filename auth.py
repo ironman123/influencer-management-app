@@ -405,7 +405,6 @@ def requests(data):
       if not user:
          return jsonify({"message": "User Not found!"}), 404
       data=request.json
-      print(data)
       request_id = data['id']
       req = AdRequest.query.filter_by(id=request_id).first()
       if not req:
@@ -417,12 +416,23 @@ def requests(data):
          #    return jsonify({'message': 'Status value is required'}), 400
          if status and req.status == 'Accepted' and status == 'Completed':
             req.status = status
+            if req.from_ == user.id:
+               return jsonify({'message': 'Owner cannot Accept or Reject own Request'}), 304
             try:
                db.session.commit()
                return jsonify({'message': 'Request updated successfully','status':status}), 200
             except Exception as e:
                db.session.rollback()
                return jsonify({'message': 'Failed to update request', 'error': str(e)}), 500
+         elif status and req.status == 'Pending' and status in ['Accepted', 'Rejected']:
+            req.status = status
+            try:
+               db.session.commit()
+               return jsonify({'message': 'Request updated successfully','status':status}), 200
+            except Exception as e:
+               db.session.rollback()
+               return jsonify({'message': 'Failed to update request', 'error': str(e)}), 500
+         
          
          req.requirements = data['requirements']
          req.payment_amount = data['payment_amount']
@@ -436,6 +446,8 @@ def requests(data):
       elif user.user_type == 'Influencer':
          if status and req.status == 'Pending' and status in ['Accepted', 'Rejected']:
             req.status = status
+            if req.from_ == user.id:
+               return jsonify({'message': 'Owner cannot Accept or Reject own Request'}), 304
             try:
                db.session.commit()
                return jsonify({'message': 'Request updated successfully','status':status}), 200

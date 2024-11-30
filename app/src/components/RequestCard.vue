@@ -65,14 +65,14 @@
           Complete
         </button>
         <button
-          v-if="isInfluencer && request.status === 'Pending'"
+          v-if="isNotRequestCreator && request.status === 'Pending'"
           class="btn btn-success btn-sm"
           @click="updateStatus('Accepted')"
         >
           Accept Request
         </button>
         <button
-          v-if="isInfluencer && request.status === 'Pending'"
+          v-if="isNotRequestCreator && request.status === 'Pending'"
           class="btn btn-danger btn-sm"
           @click="updateStatus('Rejected')"
         >
@@ -129,6 +129,10 @@ export default {
     isAdmin() {
       return this.userType === "admin";
     },
+    isNotRequestCreator()
+    {
+      return this.request.from_ !== Number(this.userID);
+    }
     // isInfluencer() {
     //   return this.userType === "influencer";
     // },
@@ -150,7 +154,8 @@ export default {
     negotiate()
     {
       this.$emit('negotiate',this.request)
-    }
+    },
+    
   },
 };
 </script>
