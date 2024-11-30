@@ -28,19 +28,6 @@
             </div>
         </div>
       </div>
-      <!-- <div :class="['card-body', { dark: isDarkTheme }]">
-        <p class="card-text"><strong>Sponsor:</strong> {{ user.owner }}</p>
-        <strong>Description:</strong>
-        <p class="card-text"> {{ user.description }}</p>
-        <div class="row" style="width: 100%;">
-          <div class="col">
-            <p class="card-text"><strong>Goals:</strong> {{ user.goals }}</p>
-          </div>
-          <div class="col">
-            <p class="card-text"><strong>Budget:</strong> ${{ user.budget }}</p>
-          </div>
-        </div>  
-      </div> -->
       <div :class="['card-footer d-flex justify-content-between align-items-center', { dark: isDarkTheme }]">
         <div>
           <button
@@ -58,18 +45,6 @@
             Authorize
           </button>
         </div>
-        <!-- <div class="row" style="width: 60%;">
-          <div class="col">
-            <p class="card-text">
-              <strong>Start Date:</strong> {{ formatDate(user.start_date) }} <br />
-            </p>    
-          </div>
-          <div class="col">
-            <p class="card-text">
-              <strong>End Date:</strong> {{ formatDate(user.end_date) }}
-            </p>    
-          </div>
-        </div> -->
       </div>
     </div>
   </template>

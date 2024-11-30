@@ -3,7 +3,7 @@ from models import *
 from utils import token_required,tokenizer
 from werkzeug.security import check_password_hash
 from datetime import timedelta,timezone
-from sqlalchemy import or_,create_engine, text
+from sqlalchemy import or_
 
 
 auth = Blueprint('auth', __name__)

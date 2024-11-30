@@ -1,12 +1,27 @@
 <template>
     <div :class="['home-page', { dark: isDarkTheme }]">
-      <h1>Total Earnings: {{ totalEarnings }} </h1>
-      <h1>Monthly Earnings: {{ monthlyEarnings }} </h1>
+      <div v-if="this.userType == 'Influencer'">
+        <h1>Total Earnings: {{ totalEarnings }} </h1>
+        <h1>Monthly Earnings: {{ monthlyEarnings }} </h1>
+      </div>
+      
+      <div v-if="this.userType == 'admin'">
+        <h2>New Sponsors</h2>
+        <div class="user-list">
+          <UserCard
+            v-for="user in filteredSponsors" :key="user.id"
+            :user="user"
+            :userType="userType"
+            :userName="userName"
+            :userID="userID"
+          />
+        </div>
+      </div>
       
       <h2>Latest Campaigns</h2>
       <div class="campaign-list">
         <CampaignCard
-          v-for="campaign in latestCampaigns" :key="campaign.id"
+          v-for="campaign in filteredCampaigns" :key="campaign.id"
           :campaign="campaign"
           :userType="userType"
           :userName="userName"
@@ -16,33 +31,35 @@
         />
       </div>
       
-      <h2>Recent Requests</h2>
-      <div class="request-list">
+      <div v-if="this.userType != 'admin'">
+        <h2>Recent Requests</h2>
+        <div class="request-list">
         <RequestCard
-          v-for="request in latestRequests" :key="request.id"
-          :request="request"
-          :userType="userType"
-          :userName="userName"
-          :userID="userID"
-          @editRequest="editRequest"
-          @update-status="updateCardStatus"
-          @negotiate="negotiate"
-        />
-        <CampaignForm 
-          v-if="showAddCampaignForm" 
-          :data="data"
-          @close="closePopup"
-        />
-        <RequestForm
-          v-if="showAddRequestForm"
-          :data="data"
-          @close="closePopup"
-        />
-        <NegotiateForm
-            v-if="showNegotiateForm"
-            :adRequestId="adRequestId"
+          v-for="request in filteredRequests" :key="request.id"
+            :request="request"
+            :userType="userType"
+            :userName="userName"
+            :userID="userID"
+            @editRequest="editRequest"
+            @update-status="updateCardStatus"
+            @negotiate="negotiate"
+          />
+          <CampaignForm 
+            v-if="showAddCampaignForm" 
+            :data="data"
             @close="closePopup"
-        />
+          />
+          <RequestForm
+            v-if="showAddRequestForm"
+            :data="data"
+            @close="closePopup"
+          />
+          <NegotiateForm
+              v-if="showNegotiateForm"
+              :adRequestId="adRequestId"
+              @close="closePopup"
+          />
+        </div>
       </div>
     </div>
   </template>
@@ -53,7 +70,8 @@
   import RequestCard from "./RequestCard.vue";
   import CampaignForm from "./CampaignForm.vue";
   import RequestForm from "./RequestForm.vue";
-  import NegotiateForm from "./Negotiate.vue"
+  import NegotiateForm from "./Negotiate.vue";
+  import UserCard from "./UserCard.vue";
   
   export default {
     name: "HomePage",
@@ -62,16 +80,19 @@
       RequestCard,
       CampaignForm,
       RequestForm,
-      NegotiateForm
+      NegotiateForm,
+      UserCard
     },
     data() {
       return {
         campaigns: [],
         requests: [],
+        sponsors:[],
         totalEarnings: 0,
         monthlyEarnings: 0,
         latestCampaigns: [],
         latestRequests: [],
+        latestSponsors: [],
         showAddCampaignForm: false,
         showAddRequestForm: false,
         showNegotiateForm:false,
@@ -80,9 +101,26 @@
       };
     },
     computed: {
-      ...mapState(["userType", "user", "userName", "userID"]),
+      ...mapState(["userType", "user", "userName", "userID",'searchQuery']),
       ...mapGetters(["isDarkTheme", "token"]),
-    },
+      filteredSponsors() {
+        return this.sponsors.filter((user) =>
+          user.name.toLowerCase().includes(this.searchQuery.toLowerCase())
+        );
+      },
+      filteredCampaigns() {
+        return this.latestCampaigns.filter((campaign) =>
+          campaign.name.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+          campaign.description.toLowerCase().includes(this.searchQuery.toLowerCase())
+        );
+      },
+    
+      filteredRequests() {
+          return this.latestRequests.filter((request) =>
+            request.campaignName.toLowerCase().includes(this.searchQuery.toLowerCase())
+          );
+        },
+      },
     mounted() {
       this.fetchData();
     },
@@ -90,13 +128,15 @@
       async fetchData() {
         try {
           // Fetch campaigns and requests from the API
-          await Promise.all([this.fetchCampaigns(), this.fetchRequests()]);
+          await Promise.all([this.fetchCampaigns(), this.fetchRequests(),this.fetchUsers()]);
           
           // Get the latest 3 campaigns
           this.latestCampaigns = this.campaigns.slice(-3);
   
           // Get the latest requests
           this.latestRequests = this.requests.slice(-3);
+
+          this.latestSponsors = this.sponsors.slice(-3);
   
           // Calculate total and monthly earnings
           this.calculateEarnings();
@@ -104,7 +144,29 @@
           console.error("Failed to fetch data:", error);
         }
       },
-  
+      
+      async fetchUsers(){
+        try {
+          const url = "http://127.0.0.1:5000/auth/users";
+          const headers = {
+            "Content-Type": "application/json",
+            "Authorization":this.token,
+            "search-query": this.searchQuery,
+          };
+          const response = await fetch(url, {
+            method: "GET",
+            headers: headers,
+          });
+          if (!response.ok) {
+            throw new Error(`API error: ${response.status}`);
+          }
+          const data = await response.json();
+          this.sponsors = data.filter((s)=>s.userType === 'Sponsor');
+        } catch (error) {
+          console.error("Failed to fetch users:", error);
+        }
+      },
+
       async fetchCampaigns() {
         const url = "http://127.0.0.1:5000/auth/campaigns";
         const headers = {

@@ -99,7 +99,8 @@ export default {
       // Filter by search query
       if (this.searchQuery) {
         filtered = filtered.filter((c) =>
-          c.name.toLowerCase().includes(this.searchQuery.toLowerCase())
+          c.name.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+          c.description.toLowerCase().includes(this.searchQuery.toLowerCase())
         );
       }
 
