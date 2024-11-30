@@ -123,6 +123,7 @@ def campaigns(data):
                )
             ).all()
       elif user.user_type == "Sponsor":
+         print(owner,type(owner))
          if owner:
             campaigns = (Campaign.query.join(Sponsor).join(User)).filter(
                and_(

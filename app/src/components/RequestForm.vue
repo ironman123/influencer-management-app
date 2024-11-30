@@ -106,7 +106,6 @@
       {
         this.influencer_id=this.userID
       }
-      
       this.from=this.userID
     },
     methods: {
@@ -179,11 +178,11 @@
         },
         async submitForm(event) {
           event.preventDefault();
+          console.log(this.validateForm())
           if (this.validateForm()) {
             // handle form submission
-            const isEdit = !!this.data.id; // Determine if it's an edit
-            console.log("isEdit:",isEdit);
-            const url = 'http://127.0.0.1:5000/auth/requests';
+            const isEdit = this.data?!!this.data.id:false;
+            // console.log("isEdit:",isEdit);
             const payload = {
               to_:this.to,
               from_:this.from,
@@ -201,33 +200,35 @@
             console.log(payload)
             try{
               
-                console.log("Adding Request: ",payload)
-                const response = await fetch(url,{
-                    method:method,
-                    headers:{
-                        "Content-Type":"application/json",
-                        "Authorization":this.token
-                    },
-                  body:JSON.stringify(payload)
-                })
-                if(response.ok)
-                {
-                    this.closePopup();
-                }
-                else if(response.status == 400)
-                {
-                    const data = await response.json();
-                    this.error.campaign_id=data['message']
-                }
-                else if(response.status == 403)
-                {
-                  const data = await response.json();
-                  this.error.campaign_id=data['message']
-                }
+              const url = 'http://127.0.0.1:5000/auth/requests';
+              console.log("Adding Request: ",payload)
+              const response = await fetch(url,{
+                method:method,
+                headers:{
+                  "Content-Type":"application/json",
+                  "Authorization":this.token
+                },
+                body:JSON.stringify(payload)
+              })
+              if(response.ok)
+              {
+                this.closePopup();
+              }
+              else if(response.status == 400)
+              {
+                const data = await response.json();
+                this.error.campaign_id=data['message']
+              }
+              else if(response.status == 403)
+              {
+                const data = await response.json();
+                this.error.campaign_id=data['message']
+              }
             }
             catch(error)
             {
-                this.error.campaign_id = "Network Error! Please try again.";
+              console.log(error)
+                this.error.campaign_id = "Network Error! Please try again.!!!";
                 // this.error.password = "Network Error! Please try again.";
             }
           }
@@ -240,9 +241,12 @@
               "Authorization":this.token,
               // "search-query": this.searchQuery,
             };
-            const params = new URLSearchParams({
-              owner: this.userType == 'Sponsor'?this.userID:null // This parameter filters the users by type on the server side
-            });
+
+            const params = new URLSearchParams()
+            if (this.userType === 'Sponsor')
+            {
+              params.append('owner', this.userID); // This parameter filters the users by type on the server side
+            }
             const response = await fetch(`${url}?${params.toString()}`, {
               method: "GET",
               headers: headers,
