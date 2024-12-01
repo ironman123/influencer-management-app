@@ -160,7 +160,12 @@
         validatePayment_amount()
         {
           this.error.payment_amount ="";
-          if(this.payment_amount < 0)
+          if(!this.payment_amount)
+          {
+            this.error.payment_amount = "Payment Cannot Be Empty!";
+            return false;
+          }
+          if(this.payment_amount < 0 )
           {
             this.error.payment_amount = "Payment Cannot Be Negative!";
             return false;
