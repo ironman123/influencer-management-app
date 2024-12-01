@@ -143,16 +143,23 @@ export default {
         console.error("Failed to fetch requests:", error);
       }
     },
-    async updateCardStatus(request,status)
+    async updateCardStatus(request,status,rating=null)
     {
       try{
+        const body = {id:request.id,status:status}
+        if(rating !== null && status === 'Completed')
+        {
+          console.log('Rating added:', rating);
+          body.rating=rating;  
+        }
+        console.log(body,' : ', status)
         const response = await fetch('http://127.0.0.1:5000/auth/requests',{
         method:"PUT",
         headers:{
           "Content-Type": "application/json",
           "Authorization": this.token
         },
-        body:JSON.stringify({id:request.id,status:status})
+        body:JSON.stringify(body)
         })  
         if(!response.ok)
         {
@@ -162,6 +169,10 @@ export default {
         }
         const data = await response.json();
         request.status = data.status;
+        if (rating !== null) 
+        {
+          console.log(`Rating of ${rating} successfully submitted.`);
+        }
       }
       catch(error)
       {

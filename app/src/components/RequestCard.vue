@@ -43,6 +43,25 @@
     <div :class="['card-footer d-flex justify-content-between align-items-center', { dark: isDarkTheme }]">
       <div>
         <!-- <button class="btn btn-primary btn-sm" @click="viewRequest">View</button> -->
+        <div v-if="isSponsor && request.status === 'Accepted'" class="d-flex align-items-center">
+        Rating: 
+        <select
+          v-model="rating"
+          class="form-select form-select-sm me-2"
+          style="width: auto;"
+        >
+          <option v-for="value in [0, 1, 2, 3, 4, 5]" :key="value" :value="value">
+            {{ value }}
+          </option>
+        </select>
+        <button
+          v-if="isSponsor && request.status === 'Accepted'"
+          class="btn btn-info btn-sm"
+          @click="completeRequest"
+        >
+          Complete
+        </button>
+        </div>
         <button
           v-if="isSponsor && request.status === 'Pending'"
           class="btn btn-info btn-sm"
@@ -57,13 +76,7 @@
         >
           Negotiate
         </button>
-        <button
-          v-if="isSponsor && request.status === 'Accepted'"
-          class="btn btn-info btn-sm"
-          @click="updateStatus('Completed')"
-        >
-          Complete
-        </button>
+        
         <button
           v-if="isNotRequestCreator && request.status === 'Pending'"
           class="btn btn-success btn-sm"
@@ -79,6 +92,7 @@
           Reject Request
         </button>
       </div>
+      
       <div class="row" style="width: 60%;">
         <div class="col">
           <p class="card-text">
@@ -100,6 +114,11 @@
 import { mapGetters } from 'vuex';
 export default {
   name: "RequestCard",
+  data(){
+    return {
+      rating:0,
+    }
+  },
   props: {
     request: {
       type: Object,
@@ -150,6 +169,9 @@ export default {
     {
       //console.log('Emitting: ',status)
       this.$emit('update-status',this.request,status)
+    },
+    completeRequest() {
+      this.$emit('update-status', this.request, 'Completed', this.rating);
     },
     negotiate()
     {

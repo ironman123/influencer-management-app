@@ -347,6 +347,7 @@ def requests(data):
             'requirements':req.requirements,
             'paymentAmount':req.payment_amount,
             'status':req.status,
+            'rating':req.rating,
             'to_':req.to_,
             'from_':req.from_,
             'toUser':req.reciever.full_name,
@@ -414,10 +415,15 @@ def requests(data):
       if user.user_type == 'Sponsor':
          # if not status:
          #    return jsonify({'message': 'Status value is required'}), 400
+         print(data)
          if status and req.status == 'Accepted' and status == 'Completed':
+            rating = data['rating']
+            if rating not in [0,1,2,3,4,5]:
+               return jsonify({'message': 'Rating not found or Invalid Rating!'}), 404
+            if user.user_type != 'Sponsor':
+               return jsonify({'message': 'Action Not allowed to a Non Sponsor!'}), 304
             req.status = status
-            if req.from_ == user.id:
-               return jsonify({'message': 'Owner cannot Accept or Reject own Request'}), 304
+            req.rating = rating
             try:
                db.session.commit()
                return jsonify({'message': 'Request updated successfully','status':status}), 200
@@ -425,6 +431,8 @@ def requests(data):
                db.session.rollback()
                return jsonify({'message': 'Failed to update request', 'error': str(e)}), 500
          elif status and req.status == 'Pending' and status in ['Accepted', 'Rejected']:
+            if req.from_ == user.id:
+               return jsonify({'message': 'Owner cannot Accept or Reject own Request'}), 304
             req.status = status
             try:
                db.session.commit()
@@ -432,7 +440,6 @@ def requests(data):
             except Exception as e:
                db.session.rollback()
                return jsonify({'message': 'Failed to update request', 'error': str(e)}), 500
-         
          
          req.requirements = data['requirements']
          req.payment_amount = data['payment_amount']
@@ -536,7 +543,7 @@ def temp():
    if request.method == 'GET':
       #pass
        campaign1 = Campaign(
-          name="S25 Ultra",
+          name="Burger Burger",
           description="Promoting winter-themed products.",
           start_date=datetime.now(timezone.utc),
           end_date=datetime.now(timezone.utc) + timedelta(days=30),
@@ -544,17 +551,17 @@ def temp():
           visibility="public",
           goals=5,
           flagged=True,
-          sponsor_id=2
+          sponsor_id=3
        )
        campaign2 = Campaign(
-          name="BMW 7 Series",
+          name="Pizza Pizza",
           description="Massive discounts for summer products.",
           start_date=datetime.now(timezone.utc) - timedelta(days=60),
           end_date=datetime.now(timezone.utc) - timedelta(days=30),
           budget=8000.0,
           visibility="private",
           goals=10,
-          sponsor_id=2
+          sponsor_id=3
        )
        db.session.add(campaign1)
        db.session.add(campaign2)
