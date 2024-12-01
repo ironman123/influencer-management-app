@@ -3,6 +3,7 @@
       <div v-if="this.userType == 'Influencer'">
         <h1>Total Earnings: {{ totalEarnings }} </h1>
         <h1>Monthly Earnings: {{ monthlyEarnings }} </h1>
+        <h1>Average Rating: {{ averageInfluencerRating }} </h1>
       </div>
       
       <div v-if="this.userType == 'admin'">
@@ -14,6 +15,8 @@
             :userType="userType"
             :userName="userName"
             :userID="userID"
+            @toggle-flag="toggleUserFlag"
+          @authorize="authorizeUser"
           />
         </div>
       </div>
@@ -28,6 +31,7 @@
           :userID="userID"
           @editCampaign="editCampaign"
           @requestAd="requestAd"
+          @toggle-flag="toggleCampaignFlag"
         />
       </div>
       
@@ -103,8 +107,17 @@
     computed: {
       ...mapState(["userType", "user", "userName", "userID",'searchQuery']),
       ...mapGetters(["isDarkTheme", "token"]),
+      averageInfluencerRating(){
+        const completedRequests = this.requests.filter((r) => r.status === 'Completed');
+        if (completedRequests.length === 0) {
+          return 0; // Return 0 if no completed requests
+        }
+        const totalRating = completedRequests.reduce((sum, request) => sum + Number(request.rating), 0);
+        const avg = totalRating / completedRequests.length;
+        return avg.toFixed(2);
+      },
       filteredSponsors() {
-        return this.sponsors.filter((user) =>
+        return this.latestSponsors.filter((user) =>
           user.name.toLowerCase().includes(this.searchQuery.toLowerCase())
         );
       },
@@ -131,12 +144,13 @@
           await Promise.all([this.fetchCampaigns(), this.fetchRequests(),this.fetchUsers()]);
           
           // Get the latest 3 campaigns
-          this.latestCampaigns = this.campaigns.slice(-3);
+          this.latestCampaigns = this.campaigns.filter((c)=>c.status !== 'Completed').slice(-3);
   
           // Get the latest requests
-          this.latestRequests = this.requests.slice(-3);
+          this.latestRequests = this.requests.filter((r)=>r.status !== 'Completed').slice(-3);
 
-          this.latestSponsors = this.sponsors.slice(-3);
+          // Get the latest sponsors
+          this.latestSponsors = this.sponsors.filter((s)=>s.flag !== 'Authorized').slice(-3);
   
           // Calculate total and monthly earnings
           this.calculateEarnings();
@@ -261,6 +275,59 @@
             this.showAddCampaignForm = false;
             this.data=null;
         },
+        async toggleUserFlag(user){
+          try {
+                const flag = user.flag === "Authorized" ? "Flagged" : "Authorized";
+
+              // Send PUT request to update the flag in the database
+                const response = await fetch('http://127.0.0.1:5000/auth/users', {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": this.token
+                    },
+                    body: JSON.stringify({ id:user.id,flag: flag }),
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    console.error("Error updating flag:", error.message);
+                    return;
+                }
+
+                const data = await response.json();
+
+                // Update the local user flag
+                user.flag = data.flag;
+            }catch (error) {
+              console.error("Failed to fetch users:", error);
+            }
+        },
+        async authorizeUser(user){
+            try{
+                const response = await fetch('http://127.0.0.1:5000/auth/users', {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": this.token
+                    },
+                    body: JSON.stringify({ id:user.id,flag:"Authorized" }),
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    console.error("Error authorizing:", error.message);
+                    return;
+                }
+
+                const data = await response.json();
+
+                // Update the local user flag
+                user.flag = data.flag;
+            }catch(error) {
+              console.error("Failed to fetch users:", error);
+            }
+        },
       // Handle updating the status of the request
     async updateCardStatus(request,status)
     {
@@ -287,8 +354,34 @@
         {
           console.error("Failed to fetch users:", error);
         }
-      
-    },
+      },
+      async toggleCampaignFlag(campaign){
+        try{
+          const flag = campaign.status;
+          const response = await fetch('http://127.0.0.1:5000/auth/campaigns', {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": this.token
+            },
+            body: JSON.stringify({ id:campaign.id,flag: flag }),
+          });
+          if (!response.ok) {
+              const error = await response.json();
+              console.error("Error updating flag:", error.message);
+              return;
+          }
+          const data = await response.json();
+          
+          // Update the local user flag
+          
+          campaign.status = data.flag;
+          }
+          catch(error)
+          {
+            console.error("Failed to fetch users:", error);
+          }
+      },
   
       // Optional: API call to update the status in the backend
       async updateRequestStatusInBackend(requestId, newStatus) {
