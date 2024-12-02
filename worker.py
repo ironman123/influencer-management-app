@@ -1,14 +1,23 @@
-from celery import Celery
+from celery import Celery,shared_task
+import smtplib
+from email.mime.text import MIMEText
+import time
+import os
 from celery.schedules import crontab
 
-app = Celery(broker_url='redis://localhost:6379/0',
-             result_backend='redis://localhost:6379/1')
+from models import db,User
 
+@shared_task
+def hello():
+    print("Hello Function")
+    time.sleep(10)
+    print("Hi")
+    return "Hello"
 
-@app.on_after_configure.connect
-def setup_perodic_tasks(sender,**kwargs):
-    sender.add_periodic_task(10.0,hello_world.s(),name='add every 10')
+@shared_task
+def daily_reminder():
+    smtpObj = smtplib.SMTP('localhost',1025)
 
-@app.task
-def hello_world():
-    print("Hello!!!")
+@shared_task
+def add(x,y):
+    return x+y
