@@ -27,8 +27,9 @@
           :labels="processedPieData.labels"
           :title="pieTitle"
         />
+        <p v-else>Loading...</p> <!-- Display loading message if data is not ready -->
       </div>
-      <p v-else>Loading...</p> <!-- Display loading message if data is not ready -->
+      
     </div>
   </template>
   
@@ -49,13 +50,6 @@
           tabs: ['Bar','Pie'],
           barTitle:"",
           pieTitle:"",
-          requests: [], // This will store the fetched requests
-          influencerRequests: {
-            accepted: 20,
-            rejected: 10,
-            completed: 15,
-          },
-          sponsorCompletedRequests: [],
         };
     },
     computed: {
