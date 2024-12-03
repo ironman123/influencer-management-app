@@ -2,8 +2,7 @@
     <nav class="navbar">
         <div class="left-content content" >
             <img src="../assets/logo.png" alt="logo" height="36vh" style="margin-right: 45px;">
-            <a>Aasdasdad</a>
-            <a>A asda</a>
+            <h5 v-if="userName">Welcome {{userName}} ({{ userType }})</h5>
             
         </div>
         <div v-if="isAuthenticated" class="center-content" style="min-width: 100px; margin-left: auto; margin-right: 3rem">
@@ -51,7 +50,7 @@
         },
         computed:{
             ...mapState(['searchQuery']),
-            ...mapGetters(['isAuthenticated','isDarkTheme']),
+            ...mapGetters(['isAuthenticated','isDarkTheme','userName','userType']),
             searchQuery: {
                 get() {
                     return this.$store.state.searchQuery; // Get searchQuery from Vuex state

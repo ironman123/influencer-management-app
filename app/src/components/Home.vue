@@ -3,8 +3,8 @@
       <div v-if="this.userType == 'Influencer'">
         <h1>Total Earnings: {{ totalEarnings }} </h1>
         <h1>Monthly Earnings: {{ monthlyEarnings }} </h1>
-        <!-- <h1>Average Rating: {{ averageInfluencerRating }} </h1> -->
-         <h1>Average Rating: {{ this.rating }}</h1>
+        <h1>Average Rating: {{ averageInfluencerRating }} </h1>
+        <!-- <h1>Average Rating: {{ this.rating }}</h1> -->
       </div>
       
       <div v-if="this.userType == 'admin'">

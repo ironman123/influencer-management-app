@@ -9,7 +9,7 @@
         </main>
 
         <footer>
-            <p>Footer content here</p>
+            <p>2024©️Rajul Yadav</p>
         </footer>
     </div>
 </template>
