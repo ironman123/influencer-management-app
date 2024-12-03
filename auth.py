@@ -358,6 +358,7 @@ def requests(data):
             'id':req.id,
             'campaignName':req.campaign.name,
             'sponsor':req.campaign.sponsor.user.full_name,
+            'influencer':req.influencer.full_name,
             'campaign_id':req.campaign.id,
             'sponsor_id':req.campaign.sponsor_id,
             'influencer_id':req.influencer_id,
