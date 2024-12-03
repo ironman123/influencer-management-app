@@ -73,7 +73,7 @@ export default {
     },
     filteredRequests() {
       let filtered = this.requests;
-      console.log('Filtering')
+      console.log(filtered)
       // Filter by tab
       if (this.activeTab === "Accepted") {
         filtered = filtered.filter((c) => c.status === "Accepted");

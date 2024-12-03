@@ -73,7 +73,7 @@ class AdRequest(db.Model):
     status = db.Column(db.String(20), nullable=False, default="Pending")  # Pending, Accepted, Rejected, Completed
     flagged = db.Column(db.Boolean, nullable=False, default=False)
     campaign = db.relationship('Campaign', backref=db.backref('ad_requests',cascade="all, delete"))
-    #influencer = db.relationship('User', backref=db.backref('ad_requests',cascade="all, delete"))  # Influencer is a User
+    influencer = db.relationship('User', backref=db.backref('ad_requests',cascade="all, delete"),primaryjoin="User.id==AdRequest.influencer_id")  # Influencer is a User
     sender = db.relationship("User", primaryjoin="User.id==AdRequest.from_")
     reciever= db.relationship("User", primaryjoin="User.id==AdRequest.to_")
 

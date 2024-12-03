@@ -4,23 +4,15 @@ from utils import token_required,tokenizer
 from werkzeug.security import check_password_hash
 from datetime import timedelta,timezone
 from sqlalchemy import or_
-from worker import sub
 from celery.result import AsyncResult
 
 
 auth = Blueprint('auth', __name__)
 
-@auth.route('/sub')
-def backend_add():
-   r=sub.delay(1,2)
-   return r.id 
 
 @auth.route('/results/<string:id>')
 def get_results(id):
-   #result =sub.apply(args=(1, 2))
    result = AsyncResult(id)
-   print(result.status)  # Should eventually become SUCCESS
-   print(result.result) 
    return [result.status,result.result]
 
 @auth.route('/signin', methods=['POST'])

@@ -8,6 +8,7 @@ import CampaignPage from '@/components/Campaign.vue';
 import RequestPage from '@/components/Request.vue';
 import UserPage from '@/components/Users.vue';
 import HomePage from '@/components/Home.vue'
+import StatsPage from '@/components/Stats.vue'
 
 
 const routes = [
@@ -57,6 +58,13 @@ const routes = [
         name:'Users',
         path: 'users',
         component: UserPage,
+        props: true,
+        meta: { requiresAuth: true },
+      },
+      {
+        name:'Stats',
+        path: 'stats',
+        component: StatsPage,
         props: true,
         meta: { requiresAuth: true },
       }

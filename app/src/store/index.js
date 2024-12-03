@@ -10,7 +10,12 @@ export default createStore({
     userType: localStorage.getItem('userType') || null,
     userName: localStorage.getItem('userName') || null,
     token: localStorage.getItem('token') || null,
-    userID: localStorage.getItem('userID') || null
+    userID: localStorage.getItem('userID') || null,
+
+    processedData: {
+      data: [],
+      labels: [],
+    },
   },
   mutations: {
     setAuth(state, payload) {
@@ -43,11 +48,16 @@ export default createStore({
       localStorage.removeItem('userName');
       localStorage.removeItem('userID');
     },
+    setProcessedData(state,payload)
+    {
+      state.processedData = payload;
+      
+    },
     toggleDarkTheme(state) {
       state.isDarkTheme = !state.isDarkTheme;
       // Update localStorage whenever the theme is toggled
       localStorage.setItem('isDarkTheme', JSON.stringify(state.isDarkTheme));
-      console.log("Dark: ", state.isDarkTheme);
+      
     },
     setSearchQuery(state, query) {
       state.searchQuery = query;
@@ -68,6 +78,40 @@ export default createStore({
     },
     resetSearchQuery({ commit }) {
       commit('setSearchQuery', "");
+    },
+    async processBarData({ commit,getters }){
+      try {
+        const url = "http://127.0.0.1:5000/auth/requests";
+        const headers = {
+          "Content-Type": "application/json",
+          "Authorization": getters.token,
+        };
+        const response = await fetch(url, { method: "GET", headers });
+        if (!response.ok) {
+          throw new Error(`API error: ${response.status}`);
+        }
+        const requests = await response.json();
+        const completedRequests = requests.filter(req => req.status === 'Completed');
+        const monthlyEarnings = {};
+
+        completedRequests.forEach(req => {
+          const EndDate = new Date(req.end_date);
+          const month = EndDate.toLocaleString("default", { month: "long", timeZone: "UTC" });
+          if (!monthlyEarnings[month]) {
+            monthlyEarnings[month] = 0;
+          }
+          monthlyEarnings[month] += req.paymentAmount;
+          
+        });
+
+        const labels = Object.keys(monthlyEarnings);
+        const data = Object.values(monthlyEarnings);
+        commit( 'setProcessedData',{ data, labels });
+        // After fetching the requests, process the data
+      } catch (error) {
+        console.error("Failed to fetch requests:", error);
+      }
+
     }
   },
   getters: {
@@ -78,6 +122,7 @@ export default createStore({
     userID: (state) => state.userID,
     userName: (state) => state.userName,
     isDarkTheme: (state) => state.isDarkTheme,
-    searchQuery: (state) => state.searchQuery
+    searchQuery: (state) => state.searchQuery,
+    processedData:(state)=>state.processedData,
   },
 });
