@@ -31,6 +31,7 @@
           { name: 'Users', icon: '/sidebaricons/users.png', route: 'users', roles: ['admin','Sponsor'] },
           { name: 'Campaigns', icon: '/sidebaricons/campaigns.png', route: 'campaigns', roles: ['admin','Influencer','Sponsor'] },
           { name: 'Requests', icon: '/sidebaricons/requests.png', route: 'requests', roles: ['admin','Influencer','Sponsor'] },
+          { name: 'Stats', icon: '/sidebaricons/stats.png', route: 'stats', roles: ['Influencer','Sponsor'] },
           // { name: 'Settings', icon: '/sidebaricons/settings.png', route: '/settings', roles: ['admin', 'Influencer'] },
           // { name: 'Profile', icon: '/sidebaricons/profile.png', route: '/profile', roles: ['admin', 'Influencer', 'Sponsor'] },
           

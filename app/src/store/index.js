@@ -16,6 +16,10 @@ export default createStore({
       data: [],
       labels: [],
     },
+    processedPieData: {
+      data: [],
+      labels: [],
+    },
   },
   mutations: {
     setAuth(state, payload) {
@@ -51,6 +55,11 @@ export default createStore({
     setProcessedBarData(state,payload)
     {
       state.processedBarData = payload;
+      
+    },
+    setProcessedPieData(state,payload)
+    {
+      state.processedPieData = payload;
       
     },
     toggleDarkTheme(state) {
@@ -112,6 +121,43 @@ export default createStore({
         console.error("Failed to fetch requests:", error);
       }
     },
+    async processInfluencerPieData({ commit,getters }){
+      try {
+        const url = "http://127.0.0.1:5000/auth/requests";
+        const headers = {
+          "Content-Type": "application/json",
+          "Authorization": getters.token,
+        };
+        const response = await fetch(url, { method: "GET", headers });
+        if (!response.ok) {
+          throw new Error(`API error: ${response.status}`);
+        }
+        const requests = await response.json();
+        
+        const statusCounts = {
+          Completed: 0,
+          Accepted: 0,
+          Rejected: 0,
+          Pending: 0,
+        };
+    
+        // Process the requests data
+        requests.forEach(req => {
+          if (req.status in statusCounts) {
+            statusCounts[req.status] += 1;
+          }
+        });
+    
+        // Prepare data and labels for the Pie Chart
+        const labels = Object.keys(statusCounts);
+        const data = Object.values(statusCounts);
+        
+        commit( 'setProcessedPieData',{ data, labels });
+        // After fetching the requests, process the data
+      } catch (error) {
+        console.error("Failed to fetch requests:", error);
+      }
+    },
     async processSponsorBarData({ commit,getters }){
       try {
         const url = "http://127.0.0.1:5000/auth/requests";
@@ -147,7 +193,52 @@ export default createStore({
         console.error("Failed to fetch requests:", error);
       }
 
-    }
+    },
+    async processSponsorPieData({ commit, getters }) {
+      try {
+        const url = "http://127.0.0.1:5000/auth/requests";
+        const headers = {
+          "Content-Type": "application/json",
+          "Authorization": getters.token,
+        };
+        const response = await fetch(url, { method: "GET", headers });
+    
+        if (!response.ok) {
+          throw new Error(`API error: ${response.status}`);
+        }
+    
+        const requests = await response.json();
+    
+        // Initialize a mapping for campaign request counts
+        const campaignRequests = {};
+    
+        // Current date to filter active campaigns
+        const currentDate = new Date();
+    
+        requests.forEach(req => {
+          const campaignEndDate = new Date(req.end_date);
+    
+          // Only consider active campaigns
+          if (campaignEndDate >= currentDate) {
+            const campaignName = req.campaignName;
+    
+            if (!campaignRequests[campaignName]) {
+              campaignRequests[campaignName] = 0;
+            }
+            campaignRequests[campaignName] += 1;
+          }
+        });
+    
+        // Prepare data and labels for the Pie Chart
+        const labels = Object.keys(campaignRequests);
+        const data = Object.values(campaignRequests);
+    
+        // Commit the processed data to the Vuex store
+        commit('setProcessedPieData', { data, labels });
+      } catch (error) {
+        console.error("Failed to fetch requests:", error);
+      }
+    }    
   },
   getters: {
     isAuthenticated: (state) => state.isAuthenticated,
@@ -159,5 +250,6 @@ export default createStore({
     isDarkTheme: (state) => state.isDarkTheme,
     searchQuery: (state) => state.searchQuery,
     processedBarData:(state)=>state.processedBarData,
+    processedPieData:(state)=>state.processedPieData,
   },
 });

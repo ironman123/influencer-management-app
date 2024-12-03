@@ -11,32 +11,44 @@
           {{ tab }}
         </button>
       </div>
-      <div v-if="activeTab === 'Influencer'" class="chart-section">
+      <div v-if="activeTab === 'Bar'" class="chart-section">
         <BarChart
           v-if="processedBarData.labels.length && processedBarData.data.length"
           :data="processedBarData.data"
           :labels="processedBarData.labels"
-          :title="title"
+          :title="barTitle"
         />
         <p v-else>Loading...</p> <!-- Display loading message if data is not ready -->
       </div>
+      <div v-if="activeTab === 'Pie'" class="chart-section">
+        <PieChart
+          v-if="processedPieData.labels.length && processedPieData.data.length"
+          :data="processedPieData.data"
+          :labels="processedPieData.labels"
+          :title="pieTitle"
+        />
+      </div>
+      <p v-else>Loading...</p> <!-- Display loading message if data is not ready -->
     </div>
   </template>
   
   <script>
   import { mapGetters } from "vuex";
   import BarChart from "./BarChart.vue"
+  import PieChart from "./PieChart.vue"
   
   export default {
     name: "StatsPage",
     components: {
-      BarChart
+      BarChart,
+      PieChart
     },
     data() {
         return {
-          activeTab: "Influencer",
-          tabs: [],
-          title:"",
+          activeTab: "Bar",
+          tabs: ['Bar','Pie'],
+          barTitle:"",
+          pieTitle:"",
           requests: [], // This will store the fetched requests
           influencerRequests: {
             accepted: 20,
@@ -47,7 +59,7 @@
         };
     },
     computed: {
-      ...mapGetters(["isDarkTheme", "token","processedBarData","userType"]),
+      ...mapGetters(["isDarkTheme", "token","processedBarData","processedPieData","userType"]),
     },
     methods: {
       setActiveTab(tab) {
@@ -59,12 +71,17 @@
     },
     created(){
       if(this.userType == "Influencer"){
-        this.title = "Monthly Earnings"
+        this.barTitle = "Monthly Earnings"
+        this.pieTitle = "Request Breakdown"
         this.$store.dispatch('processInfluencerBarData');
+        this.$store.dispatch('processInfluencerPieData');
       }
       else if(this.userType == "Sponsor"){
-        this.title = "Requests Completed By Influencers"
+        this.barTitle = "Requests Completed By Influencers"
+        this.pieTitle = "Active Campaign Proportion"
         this.$store.dispatch('processSponsorBarData');
+        this.$store.dispatch('processSponsorPieData');
+        console.log(this.processedPieData)
       }
     },
     watch:{

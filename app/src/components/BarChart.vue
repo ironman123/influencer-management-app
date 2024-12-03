@@ -56,7 +56,7 @@ export default {
 
       return [
         {
-          name: "Earnings",
+          name: "Something",
           data: this.data,
         },
       ];
