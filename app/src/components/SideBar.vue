@@ -28,7 +28,7 @@
         isCollapsed: false,
         items: [
           { name: 'Home', icon: '/sidebaricons/home.png', route: '/home', roles: ['admin', 'Influencer', 'Sponsor'] },
-          { name: 'Users', icon: '/sidebaricons/users.png', route: 'users', roles: ['admin'] },
+          { name: 'Users', icon: '/sidebaricons/users.png', route: 'users', roles: ['admin','Sponsor'] },
           { name: 'Campaigns', icon: '/sidebaricons/campaigns.png', route: 'campaigns', roles: ['admin','Influencer','Sponsor'] },
           { name: 'Requests', icon: '/sidebaricons/requests.png', route: 'requests', roles: ['admin','Influencer','Sponsor'] },
           // { name: 'Settings', icon: '/sidebaricons/settings.png', route: '/settings', roles: ['admin', 'Influencer'] },

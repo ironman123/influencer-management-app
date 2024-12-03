@@ -32,7 +32,7 @@
           <p class="card-text"><strong>Goals:</strong> {{ campaign.goals }}</p>
         </div>
         <div class="col">
-          <p class="card-text"><strong>Budget:</strong> ${{ campaign.budget }}</p>
+          <p class="card-text"><strong>Budget:</strong> {{ campaign.budget }}</p>
         </div>
       </div>
       

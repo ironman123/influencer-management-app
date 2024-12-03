@@ -4,9 +4,24 @@ from utils import token_required,tokenizer
 from werkzeug.security import check_password_hash
 from datetime import timedelta,timezone
 from sqlalchemy import or_
+from worker import sub
+from celery.result import AsyncResult
 
 
 auth = Blueprint('auth', __name__)
+
+@auth.route('/sub')
+def backend_add():
+   r=sub.delay(1,2)
+   return r.id 
+
+@auth.route('/results/<string:id>')
+def get_results(id):
+   #result =sub.apply(args=(1, 2))
+   result = AsyncResult(id)
+   print(result.status)  # Should eventually become SUCCESS
+   print(result.result) 
+   return [result.status,result.result]
 
 @auth.route('/signin', methods=['POST'])
 def login():
@@ -279,17 +294,27 @@ def users(data):
             query = query.filter_by(user_type=user_type)
 
       users = query.all()
+      users_data=[]
+      
+      for user in users:
+        requests = AdRequest.query.filter_by(influencer_id=user.id,status='Completed').all()
+        
+        if requests:
+            avg_rating = sum(request.rating for request in requests) / len(requests)
+        else:
+            avg_rating = None  
+        
+        users_data.append({
+            'id': user.id,
+            'name': user.full_name,
+            'userType': user.user_type,
+            'flag': user.flag,
+            'email': user.email,
+            'rating': avg_rating  # Include the calculated average rating
+        })
 
-      users_data=[
-         {
-            'id':user.id,
-            'name':user.full_name,
-            'userType':user.user_type,
-            'flag':user.flag,
-            'email':user.email
-         }
-         for user in users
-      ]
+      
+         
       return jsonify(users_data),201
    
    elif request.method =='PUT':
@@ -357,7 +382,6 @@ def requests(data):
          }
          for req in requests
       ]
-
       return jsonify(request_data),201
       
    

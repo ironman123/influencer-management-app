@@ -1,55 +1,61 @@
 <template>
-    <div :class="['user-card card mb-3', { dark: isDarkTheme }]">
-      <div :class="['card-header d-flex justify-content-between align-items-center', { dark: isDarkTheme }]">
+  <div :class="['user-card card mb-3', { dark: isDarkTheme }]">
+    <div :class="['card-header d-flex justify-content-between align-items-center', { dark: isDarkTheme }]">
       <!-- Card Title aligned to the start -->
       <h5 class="card-title mb-0">{{ user.name }}</h5>
-        <div>  
-          <!-- Status Badge aligned to the end with color changes based on the status -->
-            <div>
-                <span style="margin-right: 0.5rem;" :class="[
-                        'badge',
-                        { 'bg-info': user.userType === 'Influencer', 
-                          'bg-primary': user.userType === 'Sponsor' },
-                        { dark: isDarkTheme }
-                    ]"
-                >
-                    {{ user.userType }}
-                </span>
-                <span :class="[
-                        'badge',
-                        { 'bg-danger': user.flag === 'Flagged', 
-                          'bg-warning': user.flag === 'Unauthorized', 
-                          'bg-success': user.flag === 'Authorized' },
-                        { dark: isDarkTheme }
-                    ]"
-                >
-                    {{ user.flag }}
-                </span>
-            </div>
-        </div>
-      </div>
-      <div :class="['card-footer d-flex justify-content-between align-items-center', { dark: isDarkTheme }]">
+      <div>  
+        <!-- Status Badge aligned to the end with color changes based on the status -->
         <div>
-          <button
-            v-if="isAdmin"
-            class="btn btn-secondary btn-sm"
-            @click="toggleFlag"
+          <span style="margin-right: 0.5rem;" :class="[ 
+                  'badge', 
+                  { 'bg-info': user.userType === 'Influencer', 
+                    'bg-primary': user.userType === 'Sponsor' }, 
+                  { dark: isDarkTheme } 
+              ]"
           >
-            Toggle Flag
-          </button>
-          <button
-            v-if="isAdmin && user.userType === 'Sponsor' && user.flag === 'Unauthorized'"
-            class="btn btn-success btn-sm"
-            @click="authorize"
+              {{ user.userType }}
+          </span>
+          <span :class="[ 
+                  'badge', 
+                  { 'bg-danger': user.flag === 'Flagged', 
+                    'bg-warning': user.flag === 'Unauthorized', 
+                    'bg-success': user.flag === 'Authorized' }, 
+                  { dark: isDarkTheme } 
+              ]"
           >
-            Authorize
-          </button>
+              {{ user.flag }}
+          </span>
         </div>
       </div>
     </div>
-  </template>
+    <div :class="['card-footer d-flex justify-content-between align-items-center', { dark: isDarkTheme }]">
+      <!-- Buttons on the left -->
+      <div>
+        <button
+          v-if="isAdmin"
+          class="btn btn-secondary btn-sm"
+          @click="toggleFlag"
+        >
+          Toggle Flag
+        </button>
+        <button
+          v-if="isAdmin && user.userType === 'Sponsor' && user.flag === 'Unauthorized'"
+          class="btn btn-success btn-sm"
+          @click="authorize"
+        >
+          Authorize
+        </button>
+      </div>
+      <!-- Rating on the right -->
+      <div v-if="user.userType=='Influencer'" style="margin-left: auto;">
+        <span style="font-size: 1.1em; color: yellow;">⭐</span>{{ user.rating }}
+      </div>
+    </div>
+  </div>
+</template>
+
   
-  <script>
+<script>
   import { mapGetters } from 'vuex';
   export default {
     name: "UserCard",
@@ -96,10 +102,11 @@
       }
     },
   };
-  </script>
+</script>
   
   <style scoped>
   .user-card {
+    min-height: 6rem;
     border: 1px solid #ddd;
     border-radius: 0.25rem;
     width: 20rem;
@@ -131,6 +138,8 @@
   }
   
   .card-footer {
+    display: flex;
+    flex-direction: row;
     background-color: #f8f9fa;
   }
   
