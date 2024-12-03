@@ -12,11 +12,11 @@
         </button>
       </div>
       <div v-if="activeTab === 'Influencer'" class="chart-section">
-        <h2>Monthly Earnings</h2>
         <BarChart
-          v-if="processedData.labels.length && processedData.data.length"
-          :data="processedData.data"
-          :labels="processedData.labels"
+          v-if="processedBarData.labels.length && processedBarData.data.length"
+          :data="processedBarData.data"
+          :labels="processedBarData.labels"
+          :title="title"
         />
         <p v-else>Loading...</p> <!-- Display loading message if data is not ready -->
       </div>
@@ -35,7 +35,8 @@
     data() {
         return {
           activeTab: "Influencer",
-          tabs: ["Influencer", "Sponsor"],
+          tabs: [],
+          title:"",
           requests: [], // This will store the fetched requests
           influencerRequests: {
             accepted: 20,
@@ -46,68 +47,27 @@
         };
     },
     computed: {
-      ...mapGetters(["isDarkTheme", "token","processedData"]),
+      ...mapGetters(["isDarkTheme", "token","processedBarData","userType"]),
     },
     methods: {
       setActiveTab(tab) {
         this.activeTab = tab;
       },
-      // processInfluencerBarData() {
-      //     //if (!this.requests || this.requests.length === 0) {
-      //     //  return { influencerEarnings: [], months: [] };
-      //     //}
-
-      //   const completedRequests = this.requests.filter(req => req.status === 'Completed');
-      //   const monthlyEarnings = {};
-
-      //   completedRequests.forEach(req => {
-      //     const EndDate = new Date(req.end_date);
-      //     const month = EndDate.toLocaleString("default", { month: "long", timeZone: "UTC" });
-      //     console.log(month)
-      //     if (!monthlyEarnings[month]) {
-      //       monthlyEarnings[month] = 0;
-      //     }
-      //     monthlyEarnings[month] += req.paymentAmount;
-          
-      //   });
-
-      //   const monthsData = Object.keys(monthlyEarnings);
-      //   const influencerEarningsData = Object.values(monthlyEarnings);
-      //   console.log("Processed Data:", { influencerEarningsData, monthsData });
-      //   this.processedData = { influencerEarningsData, monthsData };
-      // // Return processed data
-      // },
-      // async fetchRequests() {
-      // try {
-      //   const url = "http://127.0.0.1:5000/auth/requests";
-      //   const headers = {
-      //     "Content-Type": "application/json",
-      //     "Authorization": this.token,
-      //   };
-      //   const response = await fetch(url, { method: "GET", headers });
-      //   if (!response.ok) {
-      //     throw new Error(`API error: ${response.status}`);
-      //   }
-      //   const data = await response.json();
-      //   this.requests = data;
-      //   // After fetching the requests, process the data
-      //   } catch (error) {
-      //     console.error("Failed to fetch requests:", error);
-      //   }
-      // },
     },
-    mounted() {
-      //this.fetchStats();
-      
+    mounted() {     
       
     },
     created(){
-      this.$store.dispatch('processBarData');
+      if(this.userType == "Influencer"){
+        this.title = "Monthly Earnings"
+        this.$store.dispatch('processInfluencerBarData');
+      }
+      else if(this.userType == "Sponsor"){
+        this.title = "Requests Completed By Influencers"
+        this.$store.dispatch('processSponsorBarData');
+      }
     },
     watch:{
-      processedData(v){
-        console.log(v)
-      }
     }
   };
   </script>

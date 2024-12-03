@@ -17,6 +17,10 @@ export default {
       type: Array,
       required: true,
     },
+    title:{
+      type:String,
+      required:true
+    }
   },
   computed: {
     chartOptions() {
@@ -36,7 +40,7 @@ export default {
           categories: this.labels,
         },
         title: {
-          text: 'Monthly Earnings',
+          text: this.title,
           align: 'center',
         },
         theme: {

@@ -12,7 +12,7 @@ export default createStore({
     token: localStorage.getItem('token') || null,
     userID: localStorage.getItem('userID') || null,
 
-    processedData: {
+    processedBarData: {
       data: [],
       labels: [],
     },
@@ -48,9 +48,9 @@ export default createStore({
       localStorage.removeItem('userName');
       localStorage.removeItem('userID');
     },
-    setProcessedData(state,payload)
+    setProcessedBarData(state,payload)
     {
-      state.processedData = payload;
+      state.processedBarData = payload;
       
     },
     toggleDarkTheme(state) {
@@ -79,7 +79,7 @@ export default createStore({
     resetSearchQuery({ commit }) {
       commit('setSearchQuery', "");
     },
-    async processBarData({ commit,getters }){
+    async processInfluencerBarData({ commit,getters }){
       try {
         const url = "http://127.0.0.1:5000/auth/requests";
         const headers = {
@@ -106,7 +106,42 @@ export default createStore({
 
         const labels = Object.keys(monthlyEarnings);
         const data = Object.values(monthlyEarnings);
-        commit( 'setProcessedData',{ data, labels });
+        commit( 'setProcessedBarData',{ data, labels });
+        // After fetching the requests, process the data
+      } catch (error) {
+        console.error("Failed to fetch requests:", error);
+      }
+    },
+    async processSponsorBarData({ commit,getters }){
+      try {
+        const url = "http://127.0.0.1:5000/auth/requests";
+        const headers = {
+          "Content-Type": "application/json",
+          "Authorization": getters.token,
+        };
+        const response = await fetch(url, { method: "GET", headers });
+        if (!response.ok) {
+          throw new Error(`API error: ${response.status}`);
+        }
+        const requests = await response.json();
+        const completedRequests = requests.filter(req => req.status === 'Completed');
+        
+        const influencerCompletionCount = {};
+        
+        completedRequests.forEach(req => {
+          const influencerName = req.influencer; // Assuming `toUser` is the influencer's full name
+          if (!influencerCompletionCount[influencerName]) {
+            influencerCompletionCount[influencerName] = 0;
+          }
+          influencerCompletionCount[influencerName] += 1;
+        });
+        
+        // Extract labels and data for the chart
+        const labels = Object.keys(influencerCompletionCount);
+        const data = Object.values(influencerCompletionCount);
+        
+        console.log({ labels, data });
+        commit( 'setProcessedBarData',{ data, labels });
         // After fetching the requests, process the data
       } catch (error) {
         console.error("Failed to fetch requests:", error);
@@ -123,6 +158,6 @@ export default createStore({
     userName: (state) => state.userName,
     isDarkTheme: (state) => state.isDarkTheme,
     searchQuery: (state) => state.searchQuery,
-    processedData:(state)=>state.processedData,
+    processedBarData:(state)=>state.processedBarData,
   },
 });
