@@ -108,6 +108,7 @@ export default createStore({
         }
         const requests = await response.json();
         const completedRequests = requests.filter(req => req.status === 'Completed');
+        console.log(completedRequests)
         
         // Process data to count completed requests by influencer
         const requestsByInfluencer = {};
@@ -115,10 +116,11 @@ export default createStore({
         completedRequests.forEach(req => {
           const influencer = req.influencer; // Assuming `influencer` is the name or ID
           if (!requestsByInfluencer[influencer]) {
-            requestsByInfluencer[influencer] = 1;
+            requestsByInfluencer[influencer] = 0;
           }
           requestsByInfluencer[influencer] += 1;
         });
+        console.log(requestsByInfluencer)
     
         const labels = Object.keys(requestsByInfluencer); // Influencers
         const data = Object.values(requestsByInfluencer); // Number of completed requests
@@ -152,7 +154,7 @@ export default createStore({
             const sponsor = req.sponsor; // Assuming `sponsor` is the name or ID of the sponsor
             
             if (!sponsorRequests[sponsor]) {
-              sponsorRequests[sponsor] = 1;
+              sponsorRequests[sponsor] = 0;
             }
             sponsorRequests[sponsor] += 1;
           }
