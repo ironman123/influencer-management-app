@@ -3,6 +3,7 @@
         <div class="left-content content" >
             <img src="../assets/logo.png" alt="logo" height="36vh" style="margin-right: 45px;">
             <h5 v-if="userName">Welcome {{userName}} ({{ userType }})</h5>
+            <h5 v-else>Welcome To NekoNet</h5>
             
         </div>
         <div v-if="isAuthenticated" class="center-content" style="min-width: 100px; margin-left: auto; margin-right: 3rem">
