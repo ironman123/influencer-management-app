@@ -330,17 +330,22 @@
             }
         },
       // Handle updating the status of the request
-    async updateCardStatus(request,status)
+    async updateCardStatus(request,status,rating=null)
     {
-        console.log('Yolo')
         try{
+          const body = {id:request.id,status:status}
+          if(rating !== null && status === 'Completed')
+          {
+            console.log('Rating added:', rating);
+            body.rating=rating;  
+          }
           const response = await fetch('http://127.0.0.1:5000/auth/requests',{
           method:"PUT",
           headers:{
             "Content-Type": "application/json",
             "Authorization": this.token
           },
-          body:JSON.stringify({id:request.id,status:status})
+          body:JSON.stringify(body)
           })  
           if(!response.ok)
           {
@@ -350,6 +355,10 @@
           }
           const data = await response.json();
           request.status = data.status;
+          if (rating !== null) 
+          {
+            console.log(`Rating of ${rating} successfully submitted.`);
+          }
         }
         catch(error)
         {
