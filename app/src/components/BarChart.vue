@@ -32,8 +32,16 @@ export default {
       return {
         chart: {
           type: 'bar',
+          height: '300',
+          width: '100%',
           toolbar: {
             show: false,
+          },
+        },
+        plotOptions: {
+          bar: {
+            horizontal: false,  // Set to true if you want horizontal bars
+            columnWidth: '30%', // Adjust the bar width (percentage of the space)
           },
         },
         xaxis: {

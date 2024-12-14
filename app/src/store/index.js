@@ -44,6 +44,14 @@ export default createStore({
       state.userName = null;
       state.user = null;
       state.userID = null;
+      state.processedBarData= {
+        data: [],
+        labels: [],
+      },
+      state.processedPieData= {
+        data: [],
+        labels: [],
+      },
 
       localStorage.removeItem('isAuthenticated');
       localStorage.removeItem('userType');
@@ -51,16 +59,15 @@ export default createStore({
       localStorage.removeItem('user');
       localStorage.removeItem('userName');
       localStorage.removeItem('userID');
+      
     },
     setProcessedBarData(state,payload)
     {
       state.processedBarData = payload;
-      
     },
     setProcessedPieData(state,payload)
     {
       state.processedPieData = payload;
-      
     },
     toggleDarkTheme(state) {
       state.isDarkTheme = !state.isDarkTheme;

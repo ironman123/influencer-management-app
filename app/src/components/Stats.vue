@@ -144,6 +144,7 @@
   }
   
   .chart-section {
+    width: 60%;
     background: #f4f4f4;
     border-radius: 5px;
     padding: 1rem;
