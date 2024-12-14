@@ -1,7 +1,7 @@
 <template>
     <div :class="['container popup-container', { 'dark-theme': isDarkTheme }]">
       <form class="p-4 shadow rounded border" action="/" method="post" :class="[ isDarkTheme ? 'detail-form-dark' : 'detail-form-light']" @submit="submitForm">
-        <h2 class="text-center mb-4 text-primary" :class="[isDarkTheme ? 'glow-text-dark' : 'glow-text-light']">Add Campaign</h2>
+        <h2 class="text-center mb-4 text-primary" :class="[isDarkTheme ? 'glow-text-dark' : 'glow-text-light']">Campaign</h2>
         <!-- Common Fields: Name and Email -->
         <div class="mb-3">
             <label for="name" class="form-label">Name</label>
@@ -94,8 +94,11 @@
         budget: this.data ? this.data.budget : 0,
         // startDate: this.data ? new Date(this.data.startDate).toISOString().split('T')[0] : "", 
         // endDate: this.data ? new Date(this.data.endDate).toISOString().split('T')[0] : "",
-        startDate:"", 
-        endDate:"", 
+        //startDate:"", 
+        //endDate:"", 
+        startDate: this.data ? this.formatDate(this.data.start_date) : "",
+        endDate: this.data ? this.formatDate(this.data.end_date) : "",
+        
         visibility: this.data ? this.data.visibility : "public",
         error:{
             name: "", 
@@ -109,171 +112,187 @@
       };
     },
     methods: {
-        resetErrors() {
-            this.error = {
-            name: "", 
-            description: "", 
-            goals: "",
-            budget: "",
-            startDate: "", 
-            endDate: "",
-            visibility: ""
-            };
-        },
-        closePopup() {
-            this.resetErrors();
-            this.$emit('close');
-        },
-        validateName()
+      formatDate(date) {
+      // Format fetched date to "YYYY-MM-DD" for the input
+      const d = new Date(date);
+      if (isNaN(d)) return ""; // Return empty string if the date is invalid
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+      },
+      resetErrors() {
+          this.error = {
+          name: "", 
+          description: "", 
+          goals: "",
+          budget: "",
+          startDate: "", 
+          endDate: "",
+          visibility: ""
+          };
+      },
+      closePopup() {
+          this.resetErrors();
+          this.$emit('close');
+      },
+      validateName()
+      {
+        this.error.name ="";
+        if(this.name === "" || this.name.length < 3)
         {
-          this.error.name ="";
-          if(this.name === "" || this.name.length < 3)
-          {
-            this.error.name = "Please Enter a Valid Name!";
+          this.error.name = "Please Enter a Valid Name!";
+          return false;
+        }
+        return true;
+      },
+      validateDescription()
+      {
+        this.error.description ="";
+        if(this.description === "" || this.description.length < 15)
+        {
+          this.error.description = "Please Enter a Brief Description!";
+          return false;
+        }
+        return true;
+      },
+      validateGoal()
+      {
+        this.error.goals ="";
+        if(this.goals === 0 || this.goals < 0)
+        {
+          this.error.goals = "Goal Should be Greater than 0!";
+          return false;
+        }
+        return true;
+      },
+      validateBudget()
+      {
+        this.error.budget ="";
+        if(this.budget < 0)
+        {
+          this.error.budget = "Budget Cannot Be Negative!";
+          return false;
+        }
+        return true;
+      },
+      validateStartDate()
+      {
+        this.error.startDate = "";
+        const today = new Date().toISOString().split('T')[0];
+        if (this.startDate === "") {
+            this.error.startDate = "Start date cannot be empty!";
             return false;
-          }
-          return true;
-        },
-        validateDescription()
-        {
-          this.error.description ="";
-          if(this.description === "" || this.description.length < 15)
-          {
-            this.error.description = "Please Enter a Brief Description!";
+        } else if (this.startDate < today && !this.data) {
+            this.error.startDate = "Start date cannot be in the past!";
             return false;
-          }
-          return true;
-        },
-        validateGoal()
-        {
-          this.error.goals ="";
-          if(this.goals === 0 || this.goals < 0)
-          {
-            this.error.goals = "Goal Should be Greater than 0!";
+        }
+        return true;
+      },
+      validateEndDate()
+      {
+        this.error.endDate = "";
+        const today = new Date().toISOString().split('T')[0]; // Get today's date in YYYY-MM-DD format
+        if (this.endDate === "") {
+            this.error.endDate = "End date cannot be empty!";
             return false;
-          }
-          return true;
-        },
-        validateBudget()
-        {
-          this.error.budget ="";
-          if(this.budget < 0)
-          {
-            this.error.budget = "Budget Cannot Be Negative!";
+        } else if (this.endDate < today) {
+            this.error.endDate = "End date cannot be in the past!";
             return false;
-          }
-          return true;
-        },
-        validateStartDate()
+        } else if (this.endDate <= this.startDate && !this.data) {
+            this.error.endDate = "End date must be after start date!";
+            return false;
+        }
+        return true;
+      },
+      validateVisibility()
+      {
+        this.error.visibility="";
+        if(this.visibility !== "public" && this.visibility !== "private")
         {
-          this.error.startDate = "";
-          const today = new Date().toISOString().split('T')[0];
-          if (this.startDate === "") {
-              this.error.startDate = "Start date cannot be empty!";
-              return false;
-          } else if (this.startDate < today) {
-              this.error.startDate = "Start date cannot be in the past!";
-              return false;
+            this.error.visibility = "Invalid Visibility!";
+            return false;
+        }
+        return true;
+      },    
+      validateForm()
+      {
+        return (this.validateName()
+            && this.validateDescription()
+            && this.validateGoal()
+            && this.validateBudget()
+            && this.validateStartDate()
+            && this.validateEndDate()
+            && this.validateVisibility()
+        );
+      },
+      async submitForm(event) {
+        event.preventDefault();
+        if (this.validateForm()) {
+          // handle form submission
+          const isEdit = !!this.data; // Determine if it's an edit
+          // console.log("isEdit:",isEdit);
+          const url = 'http://127.0.0.1:5000/auth/campaigns';
+          const payload = {
+            name:this.name,
+            description:this.description,
+            budget:this.budget,
+            goals:this.goals,
+            startDate:this.startDate,
+            endDate:this.endDate,
+            visibility:this.visibility
           }
-          return true;
-        },
-        validateEndDate()
-        {
-          this.error.endDate = "";
-          const today = new Date().toISOString().split('T')[0]; // Get today's date in YYYY-MM-DD format
-          if (this.endDate === "") {
-              this.error.endDate = "End date cannot be empty!";
-              return false;
-          } else if (this.endDate < today) {
-              this.error.endDate = "End date cannot be in the past!";
-              return false;
-          } else if (this.endDate <= this.startDate) {
-              this.error.endDate = "End date must be after start date!";
-              return false;
-          }
-          return true;
-        },
-        validateVisibility()
-        {
-          this.error.visibility="";
-          if(this.visibility !== "public" && this.visibility !== "private")
+          if (isEdit)
           {
-              this.error.visibility = "Invalid Visibility!";
-              return false;
+            payload.id=this.data.id;
           }
-          return true;
-        },    
-        validateForm()
-        {
-          return (this.validateName()
-              && this.validateDescription()
-              && this.validateGoal()
-              && this.validateBudget()
-              && this.validateStartDate()
-              && this.validateEndDate()
-              && this.validateVisibility()
-          );
-        },
-        async submitForm(event) {
-          event.preventDefault();
-          if (this.validateForm()) {
-            // handle form submission
-            const isEdit = !!this.data; // Determine if it's an edit
-            // console.log("isEdit:",isEdit);
-            const url = 'http://127.0.0.1:5000/auth/campaigns';
-            const payload = {
-              name:this.name,
-              description:this.description,
-              budget:this.budget,
-              goals:this.goals,
-              startDate:this.startDate,
-              endDate:this.endDate,
-              visibility:this.visibility
-            }
-            if (isEdit)
-            {
-              payload.id=this.data.id;
-            }
-            const method = isEdit ? "PUT" : "POST";
-            console.log(payload)
-            try{
-                console.log("Adding Campaign: ",payload)
-                const response = await fetch(url,{
-                    method:method,
-                    headers:{
-                        "Content-Type":"application/json",
-                        "Authorization":this.token
-                    },
-                  body:JSON.stringify(payload)
-                })
-                if(response.ok)
-                {
-                    this.closePopup();
-                }
-                else if(response.status == 400)
-                {
-                    const data = await response.json();
-                    this.error.name=data['message']
-                }
-                else if(response.status == 403)
-                {
+          const method = isEdit ? "PUT" : "POST";
+          console.log(payload)
+          try{
+              console.log("Adding Campaign: ",payload)
+              const response = await fetch(url,{
+                  method:method,
+                  headers:{
+                      "Content-Type":"application/json",
+                      "Authorization":this.token
+                  },
+                body:JSON.stringify(payload)
+              })
+              if(response.ok)
+              {
+                  this.closePopup();
+              }
+              else if(response.status == 400)
+              {
                   const data = await response.json();
                   this.error.name=data['message']
-                }
-            }
-            catch(error)
-            {
-                this.error.name = "Network Error! Please try again.";
-                // this.error.password = "Network Error! Please try again.";
-            }
+              }
+              else if(response.status == 403)
+              {
+                const data = await response.json();
+                this.error.name=data['message']
+              }
           }
-        },
+          catch(error)
+          {
+              this.error.name = "Network Error! Please try again.";
+              // this.error.password = "Network Error! Please try again.";
+          }
+        }
+      },
     },
     computed:{
       ...mapGetters(['isDarkTheme','token'])
     },
     watch:{
-      
+      startDate(p,n)
+      {
+        console.log(p,'->',n);
+      },
+    },
+    mounted(){
+      console.log('!!!!')
+      console.log(!this.data)
     }
   };
 </script>
