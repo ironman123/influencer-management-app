@@ -77,6 +77,13 @@
         this.$store.dispatch('processSponsorPieData');
         console.log(this.processedPieData)
       }
+      else if(this.userType == "admin"){
+        this.barTitle = "Requests Completed By Influencers"
+        this.pieTitle = "Completed Campaign Proportion of Sponsors"
+        this.$store.dispatch('processAdminBarData');
+        this.$store.dispatch('processAdminPieData');
+        console.log(this.processedPieData)
+      }
     },
     watch:{
     }

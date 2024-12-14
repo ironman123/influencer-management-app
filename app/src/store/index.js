@@ -88,6 +88,79 @@ export default createStore({
     resetSearchQuery({ commit }) {
       commit('setSearchQuery', "");
     },
+    async processAdminBarData({ commit, getters }) {
+      try {
+        const url = "http://127.0.0.1:5000/auth/requests";
+        const headers = {
+          "Content-Type": "application/json",
+          "Authorization": getters.token,
+        };
+        const response = await fetch(url, { method: "GET", headers });
+        if (!response.ok) {
+          throw new Error(`API error: ${response.status}`);
+        }
+        const requests = await response.json();
+        const completedRequests = requests.filter(req => req.status === 'Completed');
+        
+        // Process data to count completed requests by influencer
+        const requestsByInfluencer = {};
+    
+        completedRequests.forEach(req => {
+          const influencer = req.influencer; // Assuming `influencer` is the name or ID
+          if (!requestsByInfluencer[influencer]) {
+            requestsByInfluencer[influencer] = 1;
+          }
+          requestsByInfluencer[influencer] += 1;
+        });
+    
+        const labels = Object.keys(requestsByInfluencer); // Influencers
+        const data = Object.values(requestsByInfluencer); // Number of completed requests
+    
+        // Commit processed data to the store
+        commit('setProcessedBarData', { data, labels });
+      } catch (error) {
+        console.error("Failed to fetch requests:", error);
+      }
+    },
+    async processAdminPieData({ commit, getters }) {
+      try {
+        const url = "http://127.0.0.1:5000/auth/requests";
+        const headers = {
+          "Content-Type": "application/json",
+          "Authorization": getters.token,
+        };
+        const response = await fetch(url, { method: "GET", headers });
+        
+        if (!response.ok) {
+          throw new Error(`API error: ${response.status}`);
+        }
+        
+        const requests = await response.json();
+        
+        // Initialize a mapping for sponsor request counts
+        const sponsorRequests = {};
+        
+        requests.forEach(req => {
+          if (req.status === 'Completed') {
+            const sponsor = req.sponsor; // Assuming `sponsor` is the name or ID of the sponsor
+            
+            if (!sponsorRequests[sponsor]) {
+              sponsorRequests[sponsor] = 1;
+            }
+            sponsorRequests[sponsor] += 1;
+          }
+        });
+        
+        // Prepare data and labels for the Pie Chart
+        const labels = Object.keys(sponsorRequests); // Sponsors
+        const data = Object.values(sponsorRequests); // Number of completed requests per sponsor
+        
+        // Commit the processed data to the Vuex store
+        commit('setProcessedPieData', { data, labels });
+      } catch (error) {
+        console.error("Failed to fetch requests:", error);
+      }
+    },     
     async processInfluencerBarData({ commit,getters }){
       try {
         const url = "http://127.0.0.1:5000/auth/requests";

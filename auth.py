@@ -130,7 +130,7 @@ def campaigns(data):
                )
             ).all()
       elif user.user_type == "Sponsor":
-         print(owner,type(owner))
+         print("The owner is:",owner,type(owner))
          if owner:
             campaigns = (Campaign.query.join(Sponsor).join(User)).filter(
                and_(
@@ -350,6 +350,8 @@ def requests(data):
          requests = AdRequest.query \
          .filter_by(influencer_id = user.id) \
          .all()
+      elif user_type == "admin":
+         requests = AdRequest.query.all()
       else:
          return jsonify({"message": "User type not recognized!"}), 400
       
